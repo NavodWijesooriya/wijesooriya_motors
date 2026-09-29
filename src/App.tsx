@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { AuthProvider } from '@/context/AuthContext';
 import { DealershipProvider, useDealership } from './context/DealershipContext';
 import { Header } from './components/Header';
 import { MobileNav } from './components/MobileNav';
@@ -104,8 +105,10 @@ const MainLayout: React.FC = () => {
 
 export default function App() {
   return (
-    <DealershipProvider>
-      <MainLayout />
-    </DealershipProvider>
+    <AuthProvider>
+      <DealershipProvider>
+        <MainLayout />
+      </DealershipProvider>
+    </AuthProvider>
   );
 }
