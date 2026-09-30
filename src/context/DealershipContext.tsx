@@ -394,8 +394,11 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     const bike = bikes.find((b) => b.id === bikeId);
     if (!bike) throw new Error('Bike not found');
 
+    const definedSaleData = Object.fromEntries(
+      Object.entries(saleData).filter(([, value]) => value !== undefined)
+    ) as Omit<SaleRecord, 'id' | 'bikeId'>;
     const newSale: SaleRecord = {
-      ...saleData,
+      ...definedSaleData,
       id: saleId,
       bikeId: bikeId,
       vehicleType: saleData.vehicleType || bike.vehicleType || 'Bike',
