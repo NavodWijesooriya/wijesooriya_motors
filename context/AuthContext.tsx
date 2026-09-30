@@ -2,25 +2,47 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 
-const AuthContext = createContext<{ user: User | null }>({ user: null });
+const AuthContext = createContext<{ user: User | null; isAdmin: boolean }>({ user: null, isAdmin: false });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setLoading(false);
+      setIsAdmin(false);
+      if (!currentUser) setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const unsubscribe = onSnapshot(
+      doc(db, 'userRoles', user.uid),
+      (roleSnapshot) => {
+        setIsAdmin(roleSnapshot.data()?.role === 'admin');
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Failed to load account role', error);
+        setIsAdmin(false);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [user?.uid]);
+
   return (
-    <AuthContext.Provider value={{ user }}>
+    <AuthContext.Provider value={{ user, isAdmin }}>
       {loading ? <div>Loading Auth...</div> : children}
     </AuthContext.Provider>
   );

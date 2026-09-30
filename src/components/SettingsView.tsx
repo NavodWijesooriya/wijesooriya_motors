@@ -11,12 +11,8 @@ import {
   Sun, 
   Check,
   Trash2,
-  Lock,
-  User,
   ShieldCheck,
-  KeyRound,
-  LogOut,
-  AlertCircle
+  LogOut
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
@@ -28,9 +24,7 @@ export const SettingsView: React.FC = () => {
     exportDataToJson, 
     importDataFromJson,
     currentUser,
-    logout,
-    changeCredentials,
-    resetCredentialsToDefault
+    logout
   } = useDealership();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,14 +38,6 @@ export const SettingsView: React.FC = () => {
   const [taxNumber, setTaxNumber] = useState(settings.taxNumber || '');
   const [currencySymbol, setCurrencySymbol] = useState(settings.currencySymbol);
   const [theme, setTheme] = useState<'dark' | 'light'>(settings.theme);
-
-  // Security & Credentials State
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newUsername, setNewUsername] = useState(currentUser?.username || 'admin');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [authError, setAuthError] = useState('');
-  const [authSuccess, setAuthSuccess] = useState('');
 
   // Confirmation Modal for Clear All Data
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -68,32 +54,6 @@ export const SettingsView: React.FC = () => {
       currencySymbol,
       theme
     });
-  };
-
-  const handleUpdatePassword = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError('');
-    setAuthSuccess('');
-
-    if (newPassword !== confirmPassword) {
-      setAuthError('New password and confirmation do not match.');
-      return;
-    }
-
-    if (!newPassword.trim()) {
-      setAuthError('Password cannot be empty.');
-      return;
-    }
-
-    const res = changeCredentials(currentPassword, newUsername, newPassword);
-    if (!res.success) {
-      setAuthError(res.message || 'Failed to update credentials.');
-    } else {
-      setAuthSuccess('Username & password updated successfully.');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,26 +88,26 @@ export const SettingsView: React.FC = () => {
           Dealership Profile & <span className="text-sky-400">Settings</span>
         </h1>
         <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Customize your dealership branding (Wijesooriya Motors), staff authentication credentials, currency options, and manage database backups.
+          Customize dealership branding, currency options, and database backups.
         </p>
       </div>
 
-      {/* Section 1: Authentication & Staff Credentials */}
+      {/* Section 1: Firebase Account */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-5 shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
           <div>
             <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              Staff Authentication & Security
+              Firebase Account
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Protect your dealership terminal with custom username and password.
+              Signed in with Firebase Authentication. Access is enforced by Firestore security rules.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-950 text-slate-300 border border-slate-800">
-              User: <strong className="text-white">{currentUser?.username}</strong>
+              {currentUser?.role}: <strong className="text-white">{currentUser?.username}</strong>
             </span>
             <button
               onClick={logout}
@@ -158,110 +118,6 @@ export const SettingsView: React.FC = () => {
             </button>
           </div>
         </div>
-
-        {authError && (
-          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-            <span>{authError}</span>
-          </div>
-        )}
-
-        {authSuccess && (
-          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-            <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>{authSuccess}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleUpdatePassword} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Current Password *
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  required
-                  placeholder="Enter current password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2 text-xs text-white outline-none focus:border-sky-500 font-mono"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Login Username *
-              </label>
-              <div className="relative">
-                <User className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. admin or wijesooriya"
-                  value={newUsername}
-                  onChange={(e) => setNewUsername(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2 text-xs text-white outline-none focus:border-sky-500 font-bold"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                New Password *
-              </label>
-              <div className="relative">
-                <KeyRound className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  required
-                  placeholder="Enter new password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2 text-xs text-white outline-none focus:border-sky-500 font-mono"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Confirm New Password *
-              </label>
-              <div className="relative">
-                <KeyRound className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  required
-                  placeholder="Re-type new password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2 text-xs text-white outline-none focus:border-sky-500 font-mono"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <button
-              type="button"
-              onClick={resetCredentialsToDefault}
-              className="text-xs text-slate-400 hover:text-slate-200 underline py-2 min-h-[44px] flex items-center"
-            >
-              Reset credentials to default (admin / admin)
-            </button>
-
-            <button
-              type="submit"
-              className="px-5 py-2.5 min-h-[44px] rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-400 hover:text-white font-bold text-xs transition-colors border border-slate-700 flex items-center justify-center gap-1.5 focus-visible:ring-2 focus-visible:ring-sky-400"
-            >
-              <Check className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Update Login Credentials</span>
-            </button>
-          </div>
-        </form>
       </div>
 
       {/* Section 2: Dealership Information */}

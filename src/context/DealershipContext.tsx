@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
+import { collection, deleteDoc, doc, onSnapshot, query, setDoc, where } from 'firebase/firestore';
 import { 
   Bike, 
   DealershipSettings, 
@@ -6,10 +7,12 @@ import {
   SaleRecord, 
   OtherCostItem, 
   AuthUser,
-  StoredCredentials 
 } from '../types';
 import { sampleBikes, initialDealershipSettings } from '../data/initialData';
 import { calculateFinancialSummary, calculateTotalOtherCosts, calculateTotalCost, formatCurrency } from '../utils/formatters';
+import { signOut } from 'firebase/auth';
+import { auth, db } from '../../lib/firebase';
+import { useAuth } from '../../context/AuthContext';
 
 interface ToastNotification {
   id: string;
@@ -22,10 +25,7 @@ interface DealershipContextType {
   // Authentication
   isAuthenticated: boolean;
   currentUser: AuthUser | null;
-  login: (username: string, password: string, rememberMe?: boolean) => { success: boolean; message?: string };
   logout: () => void;
-  changeCredentials: (currentPassword: string, newUsername: string, newPassword: string) => { success: boolean; message?: string };
-  resetCredentialsToDefault: () => void;
 
   bikes: Bike[];
   settings: DealershipSettings;
@@ -81,100 +81,18 @@ interface DealershipContextType {
 
 const DealershipContext = createContext<DealershipContextType | undefined>(undefined);
 
-const BIKES_STORAGE_KEY = 'wijesooriya_moto_bikes_v1';
-const SETTINGS_STORAGE_KEY = 'wijesooriya_moto_settings_v1';
-const AUTH_CREDENTIALS_KEY = 'wijesooriya_moto_credentials_v1';
-const AUTH_SESSION_KEY = 'wijesooriya_moto_session_v1';
-
-const DEFAULT_CREDENTIALS: StoredCredentials = {
-  username: 'admin',
-  passwordHash: 'admin',
-  secondaryUser: 'wijesooriya',
-  secondaryPassword: 'wijesooriya'
-};
-
 export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Authentication State
-  const [credentials, setCredentials] = useState<StoredCredentials>(() => {
-    try {
-      const stored = localStorage.getItem(AUTH_CREDENTIALS_KEY);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    } catch (e) {
-      console.error('Failed to load credentials', e);
-    }
-    return DEFAULT_CREDENTIALS;
-  });
-
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
-    try {
-      // Check persistent session in localStorage first
-      const storedLocal = localStorage.getItem(AUTH_SESSION_KEY);
-      if (storedLocal) {
-        return JSON.parse(storedLocal);
-      }
-      // Check temporary session in sessionStorage
-      const storedSession = sessionStorage.getItem(AUTH_SESSION_KEY);
-      if (storedSession) {
-        return JSON.parse(storedSession);
-      }
-    } catch (e) {
-      console.error('Failed to load auth session', e);
-    }
-    return null;
-  });
-
+  const { user, isAdmin } = useAuth();
+  const currentUser: AuthUser | null = user ? {
+    username: user.email || user.uid,
+    displayName: user.displayName || user.email?.split('@')[0] || user.uid,
+    role: isAdmin ? 'Administrator' : 'Staff',
+    lastLogin: user.metadata.lastSignInTime || ''
+  } : null;
   const isAuthenticated = !!currentUser;
 
-  // Bikes Inventory State
-  const [bikes, setBikes] = useState<Bike[]>(() => {
-    try {
-      // Check current storage key
-      const stored = localStorage.getItem(BIKES_STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-      // Check previous key for smooth migration
-      const legacy = localStorage.getItem('apex_moto_bikes_v2_lkr');
-      if (legacy) {
-        const parsed = JSON.parse(legacy);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (err) {
-      console.error('Failed to load bikes from storage', err);
-    }
-    return sampleBikes;
-  });
-
-  // Dealership Settings State
-  const [settings, setSettings] = useState<DealershipSettings>(() => {
-    try {
-      const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
-      if (stored) {
-        const parsed: DealershipSettings = JSON.parse(stored);
-        // Automatically migrate any legacy name to Wijesooriya Motors
-        if (!parsed.dealershipName || parsed.dealershipName === 'Apex Motorbike Sales' || parsed.dealershipName.includes('Apex')) {
-          parsed.dealershipName = 'Wijesooriya Motors';
-          parsed.email = 'sales@wijesooriyamotors.lk';
-          parsed.tagline = 'Premier Motorbike Dealership & Sales Management System';
-        }
-        return parsed;
-      }
-      const legacy = localStorage.getItem('apex_moto_settings_v2_lkr');
-      if (legacy) {
-        const parsed: DealershipSettings = JSON.parse(legacy);
-        parsed.dealershipName = 'Wijesooriya Motors';
-        parsed.email = 'sales@wijesooriyamotors.lk';
-        parsed.tagline = 'Premier Motorbike Dealership & Sales Management System';
-        return parsed;
-      }
-    } catch (err) {
-      console.error('Failed to load settings from storage', err);
-    }
-    return initialDealershipSettings;
-  });
+  const [bikes, setBikes] = useState<Bike[]>([]);
+  const [settings, setSettings] = useState<DealershipSettings>(initialDealershipSettings);
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'inventory' | 'sales' | 'summary' | 'calculator' | 'settings'>('dashboard');
   
@@ -192,22 +110,8 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isPWAInstallable, setIsPWAInstallable] = useState<boolean>(false);
 
-  // Sync bikes to localStorage
+  // Apply the account's theme.
   useEffect(() => {
-    try {
-      localStorage.setItem(BIKES_STORAGE_KEY, JSON.stringify(bikes));
-    } catch (e) {
-      console.error('Failed to persist bikes', e);
-    }
-  }, [bikes]);
-
-  // Sync settings to localStorage and apply theme
-  useEffect(() => {
-    try {
-      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
-    } catch (e) {
-      console.error('Failed to persist settings', e);
-    }
     if (settings.theme === 'light') {
       document.documentElement.classList.remove('dark');
       document.documentElement.classList.add('light');
@@ -216,6 +120,39 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       document.documentElement.classList.add('dark');
     }
   }, [settings]);
+
+  useEffect(() => {
+    setBikes([]);
+    setSettings(initialDealershipSettings);
+    setSelectedBike(null);
+    setSelectedSaleRecord(null);
+    if (!user) return;
+
+    const bikesCollection = collection(db, 'bikes');
+    const bikesQuery = isAdmin
+      ? bikesCollection
+      : query(bikesCollection, where('ownerUid', '==', user.uid));
+    const unsubscribeBikes = onSnapshot(
+      bikesQuery,
+      (snapshot) => setBikes(snapshot.docs.map((bikeDoc) => ({ ...bikeDoc.data(), id: bikeDoc.id } as Bike))),
+      (error) => {
+        console.error('Failed to load dealership records', error);
+        showToast('Data Could Not Load', 'Check your connection and Firebase security rules.', 'error');
+      }
+    );
+    const unsubscribeSettings = onSnapshot(
+      doc(db, 'userSettings', user.uid),
+      (snapshot) => setSettings(snapshot.exists()
+        ? { ...initialDealershipSettings, ...snapshot.data() } as DealershipSettings
+        : initialDealershipSettings),
+      (error) => console.error('Failed to load dealership settings', error)
+    );
+
+    return () => {
+      unsubscribeBikes();
+      unsubscribeSettings();
+    };
+  }, [user?.uid, isAdmin]);
 
   // Network & PWA listeners
   useEffect(() => {
@@ -258,112 +195,45 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Authentication Handlers
-  const login = (inputUser: string, inputPass: string, rememberMe = true): { success: boolean; message?: string } => {
-    const cleanUser = inputUser.trim();
-    const cleanPass = inputPass.trim();
+  const persistBike = (bike: Bike) => {
+    if (!user) return;
+    const ownedBike = { ...bike, ownerUid: bike.ownerUid || user.uid };
+    void setDoc(doc(db, 'bikes', bike.id), ownedBike).catch((error) => {
+      console.error('Failed to save dealership record', error);
+      showToast('Save Failed', 'Your changes could not be saved to the database.', 'error');
+    });
+  };
 
-    const isPrimaryMatch = 
-      cleanUser.toLowerCase() === credentials.username.toLowerCase() && 
-      cleanPass === credentials.passwordHash;
+  const persistSettings = (nextSettings: DealershipSettings) => {
+    if (!user) return;
+    void setDoc(doc(db, 'userSettings', user.uid), nextSettings).catch((error) => {
+      console.error('Failed to save dealership settings', error);
+      showToast('Settings Save Failed', 'Your settings could not be saved to the database.', 'error');
+    });
+  };
 
-    const isSecondaryMatch = 
-      credentials.secondaryUser && 
-      credentials.secondaryPassword &&
-      cleanUser.toLowerCase() === credentials.secondaryUser.toLowerCase() && 
-      cleanPass === credentials.secondaryPassword;
-
-    if (isPrimaryMatch || isSecondaryMatch) {
-      const userObj: AuthUser = {
-        username: cleanUser,
-        displayName: cleanUser === 'admin' ? 'Administrator' : 'Wijesooriya Staff',
-        role: cleanUser === 'admin' ? 'Administrator' : 'Sales Manager',
-        lastLogin: new Date().toISOString()
-      };
-
-      setCurrentUser(userObj);
-
-      if (rememberMe) {
-        localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(userObj));
-        sessionStorage.removeItem(AUTH_SESSION_KEY);
-      } else {
-        sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(userObj));
-        localStorage.removeItem(AUTH_SESSION_KEY);
+  const replaceVisibleBikes = (nextBikes: Bike[]) => {
+    if (!user) return;
+    const userBikes = bikes.filter((bike) => bike.ownerUid === user.uid);
+    const ownedNextBikes = nextBikes.map((bike) => ({ ...bike, ownerUid: user.uid }));
+    const retainedIds = new Set(ownedNextBikes.map((bike) => bike.id));
+    for (const bike of userBikes) {
+      if (!retainedIds.has(bike.id)) {
+        void deleteDoc(doc(db, 'bikes', bike.id)).catch((error) => {
+          console.error('Failed to remove dealership record', error);
+          showToast('Delete Failed', 'A record could not be removed from the database.', 'error');
+        });
       }
-
-      showToast(
-        'Welcome to Wijesooriya Motors',
-        `Logged in as ${userObj.displayName} (${userObj.username}).`,
-        'success'
-      );
-      return { success: true };
     }
-
-    return { 
-      success: false, 
-      message: 'Invalid username or password. Default login: admin / admin' 
-    };
+    setBikes((currentBikes) => isAdmin
+      ? [...ownedNextBikes, ...currentBikes.filter((bike) => bike.ownerUid !== user.uid)]
+      : ownedNextBikes);
+    ownedNextBikes.forEach(persistBike);
   };
 
   const logout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem(AUTH_SESSION_KEY);
-    sessionStorage.removeItem(AUTH_SESSION_KEY);
+    void signOut(auth).catch((error) => console.error('Failed to sign out of Firebase', error));
     showToast('Logged Out', 'You have been safely logged out.', 'info');
-  };
-
-  const changeCredentials = (
-    currentPassword: string,
-    newUsername: string,
-    newPassword: string
-  ): { success: boolean; message?: string } => {
-    if (!newUsername.trim() || !newPassword.trim()) {
-      return { success: false, message: 'Username and password cannot be empty.' };
-    }
-
-    // Check if current password matches primary or secondary
-    const isCurrentValid = 
-      currentPassword === credentials.passwordHash || 
-      (credentials.secondaryPassword && currentPassword === credentials.secondaryPassword);
-
-    if (!isCurrentValid) {
-      return { success: false, message: 'Current password does not match.' };
-    }
-
-    const updated: StoredCredentials = {
-      ...credentials,
-      username: newUsername.trim(),
-      passwordHash: newPassword.trim()
-    };
-
-    setCredentials(updated);
-    try {
-      localStorage.setItem(AUTH_CREDENTIALS_KEY, JSON.stringify(updated));
-    } catch (e) {
-      console.error('Failed to save updated credentials', e);
-    }
-
-    if (currentUser) {
-      const updatedUser: AuthUser = {
-        ...currentUser,
-        username: newUsername.trim()
-      };
-      setCurrentUser(updatedUser);
-      localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(updatedUser));
-    }
-
-    showToast('Credentials Updated', 'Your login username and password have been saved.', 'success');
-    return { success: true };
-  };
-
-  const resetCredentialsToDefault = () => {
-    setCredentials(DEFAULT_CREDENTIALS);
-    try {
-      localStorage.setItem(AUTH_CREDENTIALS_KEY, JSON.stringify(DEFAULT_CREDENTIALS));
-    } catch (e) {
-      console.error(e);
-    }
-    showToast('Credentials Reset', 'Reset to defaults: admin / admin', 'info');
   };
 
   const installPWA = async () => {
@@ -383,7 +253,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
   const summary = useMemo(() => calculateFinancialSummary(bikes), [bikes]);
 
   const addBike = (data: Partial<Bike>): Bike => {
-    const newId = `bike-${Date.now()}`;
+    const newId = doc(collection(db, 'bikes')).id;
     const otherCosts: OtherCostItem[] = data.repairCosts || [];
     const totalOtherCosts = calculateTotalOtherCosts(otherCosts);
     const costPrice = Number(data.purchasePrice) || 0;
@@ -393,6 +263,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
 
     const newBike: Bike = {
       id: newId,
+      ownerUid: user?.uid,
       vehicleType: data.vehicleType || 'Bike',
       make: data.make?.trim() || 'Honda',
       model: data.model?.trim() || 'Motorbike',
@@ -418,6 +289,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     };
 
     setBikes((prev) => [newBike, ...prev]);
+    persistBike(newBike);
     showToast(
       'Motorbike Saved',
       `${newBike.year} ${newBike.make} ${newBike.model} added to Wijesooriya Motors. Cost: ${formatCurrency(costPrice, settings.currencySymbol)} | Est. Profit: +${formatCurrency(estimatedProfit, settings.currencySymbol)}`,
@@ -427,57 +299,52 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const updateBike = (id: string, updates: Partial<Bike>) => {
-    setBikes((prev) =>
-      prev.map((bike) => {
-        if (bike.id !== id) return bike;
-        const newCostPrice = updates.purchasePrice !== undefined ? Number(updates.purchasePrice) : bike.purchasePrice;
-        const newOtherCosts = updates.repairCosts !== undefined ? updates.repairCosts : bike.repairCosts;
-        const newTotalCost = calculateTotalCost(newCostPrice, newOtherCosts);
+    const bike = bikes.find((item) => item.id === id);
+    if (!bike) return;
+    const newCostPrice = updates.purchasePrice !== undefined ? Number(updates.purchasePrice) : bike.purchasePrice;
+    const newOtherCosts = updates.repairCosts !== undefined ? updates.repairCosts : bike.repairCosts;
+    const newTotalCost = calculateTotalCost(newCostPrice, newOtherCosts);
+    const updated: Bike = {
+      ...bike,
+      ...updates,
+      id: bike.id,
+      ownerUid: bike.ownerUid,
+      purchasePrice: newCostPrice,
+      repairCosts: newOtherCosts,
+      totalCost: newTotalCost,
+      updatedAt: new Date().toISOString()
+    };
 
-        const updated: Bike = {
-          ...bike,
-          ...updates,
-          purchasePrice: newCostPrice,
-          repairCosts: newOtherCosts,
-          totalCost: newTotalCost,
-          updatedAt: new Date().toISOString()
-        };
+    if (updated.sale) {
+      const totalOtherCosts = calculateTotalOtherCosts(newOtherCosts);
+      const saleAmount = updated.sale.saleAmount;
+      const totalCashReceived = updated.sale.saleMethod === 'Cash'
+        ? saleAmount
+        : saleAmount + updated.sale.financeCommission;
+      const netProfit = totalCashReceived - newTotalCost;
+      updated.sale = {
+        ...updated.sale,
+        purchasePrice: newCostPrice,
+        totalRepairCost: totalOtherCosts,
+        totalCost: newTotalCost,
+        totalCashReceived,
+        netProfit,
+        profitMarginPercent: saleAmount > 0 ? (netProfit / saleAmount) * 100 : 0
+      };
+    }
 
-        if (updated.sale) {
-          const totalOtherCosts = calculateTotalOtherCosts(newOtherCosts);
-          const saleMethod = updated.sale.saleMethod;
-          const saleAmount = updated.sale.saleAmount;
-          let netProfit = 0;
-          let totalCashReceived = saleAmount;
-
-          if (saleMethod === 'Cash') {
-            netProfit = saleAmount - newTotalCost;
-          } else {
-            const comm = updated.sale.financeCommission;
-            totalCashReceived = saleAmount + comm;
-            netProfit = (saleAmount + comm) - newTotalCost;
-          }
-
-          updated.sale = {
-            ...updated.sale,
-            purchasePrice: newCostPrice,
-            totalRepairCost: totalOtherCosts,
-            totalCost: newTotalCost,
-            totalCashReceived,
-            netProfit,
-            profitMarginPercent: saleAmount > 0 ? (netProfit / saleAmount) * 100 : 0
-          };
-        }
-
-        return updated;
-      })
-    );
+    setBikes((prev) => prev.map((item) => item.id === id ? updated : item));
+    persistBike(updated);
     showToast('Motorbike Updated', 'Cost price, other costs, and profit calculations updated.', 'success');
   };
 
   const deleteBike = (id: string) => {
     const bikeToDelete = bikes.find((b) => b.id === id);
     setBikes((prev) => prev.filter((b) => b.id !== id));
+    void deleteDoc(doc(db, 'bikes', id)).catch((error) => {
+      console.error('Failed to delete dealership record', error);
+      showToast('Delete Failed', 'The record could not be removed from the database.', 'error');
+    });
     if (selectedBike?.id === id) {
       setSelectedBike(null);
       setIsDetailModalOpen(false);
@@ -499,17 +366,9 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       bikeSummary: `${bike.year} ${bike.make} ${bike.model}`
     };
 
-    setBikes((prev) =>
-      prev.map((b) => {
-        if (b.id !== bikeId) return b;
-        return {
-          ...b,
-          status: 'Sold',
-          sale: newSale,
-          updatedAt: new Date().toISOString()
-        };
-      })
-    );
+    const updatedBike = { ...bike, status: 'Sold' as const, sale: newSale, updatedAt: new Date().toISOString() };
+    setBikes((prev) => prev.map((item) => item.id === bikeId ? updatedBike : item));
+    persistBike(updatedBike);
 
     const commissionNotice = newSale.saleMethod === 'Finance'
       ? ` Included 3% finance commission of ${formatCurrency(newSale.financeCommission, settings.currencySymbol)}.`
@@ -524,39 +383,31 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const revertSale = (bikeId: string) => {
-    setBikes((prev) =>
-      prev.map((b) => {
-        if (b.id !== bikeId) return b;
-        const { sale, ...rest } = b;
-        return {
-          ...rest,
-          status: 'In Stock',
-          updatedAt: new Date().toISOString()
-        };
-      })
-    );
+    const bike = bikes.find((item) => item.id === bikeId);
+    if (!bike) return;
+    const { sale, ...rest } = bike;
+    const updatedBike = { ...rest, status: 'In Stock' as const, updatedAt: new Date().toISOString() };
+    setBikes((prev) => prev.map((item) => item.id === bikeId ? updatedBike : item));
+    persistBike(updatedBike);
     showToast('Sale Voided', 'Motorbike returned to In Stock inventory.', 'info');
   };
 
   const addRepairItem = (bikeId: string, item: Omit<OtherCostItem, 'id'>) => {
     const newOtherCost: OtherCostItem = {
       ...item,
-      id: `cost-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`
+      id: doc(collection(db, 'bikes')).id
     };
-
-    setBikes((prev) =>
-      prev.map((bike) => {
-        if (bike.id !== bikeId) return bike;
-        const newOtherCosts = [...bike.repairCosts, newOtherCost];
-        const newTotalCost = calculateTotalCost(bike.purchasePrice, newOtherCosts);
-        return {
-          ...bike,
-          repairCosts: newOtherCosts,
-          totalCost: newTotalCost,
-          updatedAt: new Date().toISOString()
-        };
-      })
-    );
+    const bike = bikes.find((item) => item.id === bikeId);
+    if (!bike) return;
+    const newOtherCosts = [...bike.repairCosts, newOtherCost];
+    const updatedBike = {
+      ...bike,
+      repairCosts: newOtherCosts,
+      totalCost: calculateTotalCost(bike.purchasePrice, newOtherCosts),
+      updatedAt: new Date().toISOString()
+    };
+    setBikes((prev) => prev.map((item) => item.id === bikeId ? updatedBike : item));
+    persistBike(updatedBike);
     showToast(
       'Other Cost Added',
       `Logged "${item.description}" (${formatCurrency(item.cost, settings.currencySymbol)}).`,
@@ -565,35 +416,43 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const removeRepairItem = (bikeId: string, repairId: string) => {
-    setBikes((prev) =>
-      prev.map((bike) => {
-        if (bike.id !== bikeId) return bike;
-        const newOtherCosts = bike.repairCosts.filter((r) => r.id !== repairId);
-        const newTotalCost = calculateTotalCost(bike.purchasePrice, newOtherCosts);
-        return {
-          ...bike,
-          repairCosts: newOtherCosts,
-          totalCost: newTotalCost,
-          updatedAt: new Date().toISOString()
-        };
-      })
-    );
+    const bike = bikes.find((item) => item.id === bikeId);
+    if (!bike) return;
+    const newOtherCosts = bike.repairCosts.filter((repair) => repair.id !== repairId);
+    const updatedBike = {
+      ...bike,
+      repairCosts: newOtherCosts,
+      totalCost: calculateTotalCost(bike.purchasePrice, newOtherCosts),
+      updatedAt: new Date().toISOString()
+    };
+    setBikes((prev) => prev.map((item) => item.id === bikeId ? updatedBike : item));
+    persistBike(updatedBike);
     showToast('Expense Removed', 'Total cost and profit margin adjusted.', 'info');
   };
 
   const updateSettings = (updates: Partial<DealershipSettings>) => {
-    setSettings((prev) => ({ ...prev, ...updates }));
+    const nextSettings = { ...settings, ...updates };
+    setSettings(nextSettings);
+    persistSettings(nextSettings);
     showToast('Settings Saved', 'Wijesooriya Motors configuration updated.', 'success');
   };
 
   const resetToDefaultData = () => {
-    setBikes(sampleBikes);
+    const newIds = new Map(sampleBikes.map((bike) => [bike.id, doc(collection(db, 'bikes')).id]));
+    const resetBikes = sampleBikes.map((bike) => ({
+      ...bike,
+      id: newIds.get(bike.id)!,
+      ownerUid: user?.uid,
+      sale: bike.sale ? { ...bike.sale, bikeId: newIds.get(bike.id)! } : undefined
+    }));
+    replaceVisibleBikes(resetBikes);
     setSettings(initialDealershipSettings);
+    persistSettings(initialDealershipSettings);
     showToast('Reset Complete', 'Loaded realistic dealership sales records (Cars & Bikes).', 'info');
   };
 
   const clearAllData = () => {
-    setBikes([]);
+    replaceVisibleBikes([]);
     showToast('Data Cleared', 'All inventory motorbikes and sales have been cleared.', 'info');
   };
 
@@ -622,8 +481,19 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     try {
       const data = JSON.parse(jsonStr);
       if (Array.isArray(data.bikes)) {
-        setBikes(data.bikes);
-        if (data.settings) setSettings(data.settings);
+        const importedIds = new Map(data.bikes.map((bike: Bike) => [bike.id, doc(collection(db, 'bikes')).id]));
+        const importedBikes = data.bikes.map((bike: Bike) => ({
+          ...bike,
+          id: importedIds.get(bike.id)!,
+          ownerUid: user?.uid,
+          sale: bike.sale ? { ...bike.sale, bikeId: importedIds.get(bike.id)! } : undefined
+        }));
+        replaceVisibleBikes(importedBikes);
+        if (data.settings) {
+          const importedSettings = { ...initialDealershipSettings, ...data.settings };
+          setSettings(importedSettings);
+          persistSettings(importedSettings);
+        }
         showToast('Backup Restored', `Restored ${data.bikes.length} motorbikes from JSON.`, 'success');
         return true;
       }
@@ -661,10 +531,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       value={{
         isAuthenticated,
         currentUser,
-        login,
         logout,
-        changeCredentials,
-        resetCredentialsToDefault,
         bikes,
         settings,
         summary,

@@ -94,6 +94,7 @@ export interface SaleRecord {
 
 export interface Bike {
   id: string;
+  ownerUid?: string;
   vehicleType?: VehicleType;
   make: string;
   model: string;
@@ -193,9 +194,3 @@ export interface AuthUser {
   lastLogin: string;
 }
 
-export interface StoredCredentials {
-  username: string;
-  passwordHash: string; // Stored plain or hash for local simplicity
-  secondaryUser?: string;
-  secondaryPassword?: string;
-}

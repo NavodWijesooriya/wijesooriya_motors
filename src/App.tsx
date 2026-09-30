@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { DealershipProvider, useDealership } from './context/DealershipContext';
 import { Header } from './components/Header';
 import { MobileNav } from './components/MobileNav';
@@ -23,9 +23,10 @@ import { LoginScreen } from './components/LoginScreen';
 import { Bike as BikeIcon } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
-  const { activeTab, settings, summary, isAuthenticated } = useDealership();
+  const { activeTab, settings, summary } = useDealership();
+  const { user } = useAuth();
 
-  if (!isAuthenticated) {
+  if (!user) {
     return (
       <>
         <LoginScreen />

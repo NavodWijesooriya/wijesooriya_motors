@@ -1,47 +1,38 @@
 import React, { useState } from 'react';
 import { useDealership } from '../context/DealershipContext';
+import { auth } from '../../lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { 
   Bike as BikeIcon, 
   Lock, 
-  User, 
   Eye, 
   EyeOff, 
   LogIn, 
   ShieldCheck, 
-  KeyRound,
-  AlertCircle,
-  Sparkles,
-  CheckCircle2
+  AlertCircle
 } from 'lucide-react';
 
 export const LoginScreen: React.FC = () => {
-  const { login, settings } = useDealership();
+  const { settings } = useDealership();
 
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      const res = login(username, password, rememberMe);
-      if (!res.success) {
-        setErrorMessage(res.message || 'Invalid username or password.');
-      }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Unable to sign in. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 250);
-  };
-
-  const handleQuickFill = (user: string, pass: string) => {
-    setUsername(user);
-    setPassword(pass);
-    setErrorMessage('');
+    }
   };
 
   return (
@@ -90,37 +81,33 @@ export const LoginScreen: React.FC = () => {
             </div>
           )}
 
-          {/* Username */}
+          {/* Email */}
           <div className="space-y-1.5">
-            <label htmlFor="login-username" className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-              Username *
+            <label htmlFor="login-email" className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+              Email *
             </label>
             <div className="relative">
-              <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
               <input
-                id="login-username"
-                type="text"
+                id="login-email"
+                type="email"
                 required
-                autoComplete="username"
-                value={username}
+                autoComplete="email"
+                value={email}
                 onChange={(e) => {
-                  setUsername(e.target.value);
+                  setEmail(e.target.value);
                   setErrorMessage('');
                 }}
-                placeholder="Enter username (e.g. admin)"
-                className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 rounded-xl pl-10 pr-4 py-3 min-h-[44px] text-xs sm:text-sm text-white placeholder-slate-600 outline-none transition-all font-medium"
+                placeholder="Enter your email"
+                className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 rounded-xl px-4 py-3 min-h-[44px] text-xs sm:text-sm text-white placeholder-slate-600 outline-none transition-all font-medium"
               />
             </div>
           </div>
 
           {/* Password */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label htmlFor="login-password" className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                Password *
-              </label>
-              <span className="text-[10px] text-slate-400">Default: admin</span>
-            </div>
+            <label htmlFor="login-password" className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+              Password *
+            </label>
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
               <input
@@ -148,19 +135,6 @@ export const LoginScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Remember Me */}
-          <div className="flex items-center justify-between text-xs pt-1">
-            <label className="flex items-center gap-2 cursor-pointer select-none text-slate-400 hover:text-slate-200 py-1 min-h-[36px]">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded bg-slate-950 border-slate-700 text-sky-500 focus:ring-sky-500 focus:ring-offset-slate-900"
-              />
-              <span>Remember login on this device</span>
-            </label>
-          </div>
-
           {/* Submit Button */}
           <button
             type="submit"
@@ -175,34 +149,6 @@ export const LoginScreen: React.FC = () => {
             <span>Sign In to Terminal</span>
           </button>
 
-          {/* Quick Demo Credentials Autofill */}
-          <div className="pt-4 border-t border-slate-800/80 space-y-2 text-center">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
-              Quick 1-Click Login Credentials:
-            </span>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickFill('admin', 'admin')}
-                className="w-full sm:w-auto px-4 py-2.5 min-h-[44px] rounded-xl bg-slate-950 border border-slate-800 hover:border-sky-500/50 text-slate-300 hover:text-sky-300 text-xs font-mono font-bold transition-colors flex items-center justify-center gap-1.5 focus-visible:ring-2 focus-visible:ring-sky-400"
-              >
-                <KeyRound className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" />
-                <span>admin / admin</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickFill('wijesooriya', 'wijesooriya')}
-                className="w-full sm:w-auto px-4 py-2.5 min-h-[44px] rounded-xl bg-slate-950 border border-slate-800 hover:border-amber-500/50 text-slate-300 hover:text-amber-300 text-xs font-mono font-bold transition-colors flex items-center justify-center gap-1.5 focus-visible:ring-2 focus-visible:ring-amber-400"
-              >
-                <KeyRound className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
-                <span>wijesooriya / wijesooriya</span>
-              </button>
-            </div>
-            <p className="text-[10px] text-slate-400 mt-1">
-              You can change your username & password inside Settings anytime.
-            </p>
-          </div>
         </form>
 
         {/* Card Footer */}

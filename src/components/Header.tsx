@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDealership } from '../context/DealershipContext';
+import { useAuth } from '../../context/AuthContext';
 import { 
   Bike as BikeIcon, 
   LayoutDashboard, 
@@ -18,6 +19,7 @@ import {
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
+  const { user } = useAuth();
   const { 
     settings, 
     activeTab, 
@@ -30,6 +32,7 @@ export const Header: React.FC = () => {
     currentUser,
     logout
   } = useDealership();
+  const username = currentUser?.username || user?.email;
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -160,21 +163,21 @@ export const Header: React.FC = () => {
                 <Settings className="w-4 h-4" aria-hidden="true" />
               </button>
 
-              {currentUser && (
+              {username && (
                 <div className="flex items-center gap-1.5 pl-1.5 border-l border-slate-800">
                   <div 
                     onClick={() => setActiveTab('settings')}
                     className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[44px] rounded-xl bg-slate-900 border border-slate-800 text-xs hover:border-slate-700 cursor-pointer"
-                    title={`Logged in as ${currentUser.username}`}
+                    title={`Logged in as ${username}`}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => e.key === 'Enter' && setActiveTab('settings')}
-                    aria-label={`User profile: ${currentUser.username}`}
+                    aria-label={`User profile: ${username}`}
                   >
                     <div className="w-6 h-6 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold text-xs" aria-hidden="true">
                       <User className="w-3.5 h-3.5" />
                     </div>
-                    <span className="font-bold text-white font-mono text-xs">{currentUser.username}</span>
+                    <span className="font-bold text-white font-mono text-xs">{username}</span>
                   </div>
 
                   <button
@@ -220,7 +223,7 @@ export const Header: React.FC = () => {
                   <User className="w-4 h-4" aria-hidden="true" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-white font-mono">{currentUser?.username}</div>
+                  <div className="text-xs font-bold text-white font-mono">{username}</div>
                   <div className="text-[10px] text-slate-400">Authorized Terminal Staff</div>
                 </div>
               </div>
