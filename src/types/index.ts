@@ -95,6 +95,12 @@ export interface SaleRecord {
 export interface Bike {
   id: string;
   ownerUid?: string;
+  createdBy?: string;
+  createdByName?: string;
+  createdByEmail?: string;
+  updatedBy?: string;
+  updatedByName?: string;
+  updatedByEmail?: string;
   vehicleType?: VehicleType;
   make: string;
   model: string;

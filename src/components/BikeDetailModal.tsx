@@ -17,8 +17,10 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatNumber, formatDate, calculateTotalOtherCosts } from '../utils/formatters';
 import { OtherCostCategory } from '../types';
+import { useAuth } from '../../context/AuthContext';
 
 export const BikeDetailModal: React.FC = () => {
+  const { isAdmin } = useAuth();
   const { 
     selectedBike, 
     isDetailModalOpen, 
@@ -190,6 +192,27 @@ export const BikeDetailModal: React.FC = () => {
               <div className="text-sm font-bold text-white mt-0.5">{formatDate(selectedBike.purchaseDate)}</div>
             </div>
           </div>
+
+          {isAdmin && (
+            <section className="p-4 rounded-xl bg-slate-950 border border-sky-500/20 space-y-3" aria-label="Record creator and audit information">
+              <h3 className="text-xs font-bold text-sky-300 uppercase">Creator & Audit</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <div className="text-slate-400">Created by</div>
+                  <div className="mt-1 text-white font-semibold">{selectedBike.createdByName || 'Unknown creator'}</div>
+                  <div className="text-slate-300 break-all">{selectedBike.createdByEmail || 'Email unavailable'}</div>
+                  <div className="text-slate-500 font-mono break-all">UID: {selectedBike.createdBy || 'Unavailable'}</div>
+                </div>
+                <div>
+                  <div className="text-slate-400">Last updated</div>
+                  <div className="mt-1 text-white">{formatDate(selectedBike.updatedAt)}</div>
+                  <div className="text-slate-300">{selectedBike.updatedByName || 'Unknown user'}{selectedBike.updatedByEmail ? ` (${selectedBike.updatedByEmail})` : ''}</div>
+                  <div className="text-slate-500 font-mono break-all">UID: {selectedBike.updatedBy || 'Unavailable'}</div>
+                </div>
+                <div className="text-slate-400">Created <span className="text-slate-200">{formatDate(selectedBike.createdAt)}</span></div>
+              </div>
+            </section>
+          )}
 
           {/* Financial Statement & Profit Feature */}
           <div className="rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-slate-800 p-5 space-y-4 shadow-lg">

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
-import { collection, deleteDoc, doc, onSnapshot, query, setDoc, where } from 'firebase/firestore';
+import { collection, deleteDoc, deleteField, doc, onSnapshot, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { 
   Bike, 
   DealershipSettings, 
@@ -134,7 +134,16 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       : query(bikesCollection, where('ownerUid', '==', user.uid));
     const unsubscribeBikes = onSnapshot(
       bikesQuery,
-      (snapshot) => setBikes(snapshot.docs.map((bikeDoc) => ({ ...bikeDoc.data(), id: bikeDoc.id } as Bike))),
+      (snapshot) => setBikes(snapshot.docs.map((bikeDoc) => {
+        const data = bikeDoc.data();
+        const toIsoString = (value: any) => value?.toDate ? value.toDate().toISOString() : value || '';
+        return {
+          ...data,
+          id: bikeDoc.id,
+          createdAt: toIsoString(data.createdAt),
+          updatedAt: toIsoString(data.updatedAt)
+        } as Bike;
+      })),
       (error) => {
         console.error('Failed to load dealership records', error);
         showToast('Data Could Not Load', 'Check your connection and Firebase security rules.', 'error');
@@ -195,10 +204,34 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const persistBike = (bike: Bike) => {
+  const persistBike = (bike: Bike, isNew = false) => {
     if (!user) return;
     const ownedBike = { ...bike, ownerUid: bike.ownerUid || user.uid };
-    void setDoc(doc(db, 'bikes', bike.id), ownedBike).catch((error) => {
+    const updatedBy = {
+      updatedBy: user.uid,
+      updatedByName: user.displayName || user.email?.split('@')[0] || user.uid,
+      updatedByEmail: user.email || ''
+    };
+    const write = isNew
+      ? setDoc(doc(db, 'bikes', bike.id), {
+          ...ownedBike,
+          createdBy: user.uid,
+          createdByName: user.displayName || user.email?.split('@')[0] || user.uid,
+          createdByEmail: user.email || '',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          ...updatedBy
+        })
+      : (() => {
+          const { createdAt, createdBy, createdByName, createdByEmail, ...recordUpdates } = ownedBike;
+          return setDoc(doc(db, 'bikes', bike.id), {
+            ...recordUpdates,
+            sale: bike.sale ?? deleteField(),
+            updatedAt: serverTimestamp(),
+            ...updatedBy
+          }, { merge: true });
+        })();
+    void write.catch((error) => {
       console.error('Failed to save dealership record', error);
       showToast('Save Failed', 'Your changes could not be saved to the database.', 'error');
     });
@@ -228,7 +261,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     setBikes((currentBikes) => isAdmin
       ? [...ownedNextBikes, ...currentBikes.filter((bike) => bike.ownerUid !== user.uid)]
       : ownedNextBikes);
-    ownedNextBikes.forEach(persistBike);
+    ownedNextBikes.forEach((bike) => persistBike(bike, true));
   };
 
   const logout = () => {
@@ -264,6 +297,9 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     const newBike: Bike = {
       id: newId,
       ownerUid: user?.uid,
+      createdBy: user?.uid,
+      createdByName: user?.displayName || user?.email?.split('@')[0] || user?.uid,
+      createdByEmail: user?.email || '',
       vehicleType: data.vehicleType || 'Bike',
       make: data.make?.trim() || 'Honda',
       model: data.model?.trim() || 'Motorbike',
@@ -289,7 +325,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     };
 
     setBikes((prev) => [newBike, ...prev]);
-    persistBike(newBike);
+    persistBike(newBike, true);
     showToast(
       'Motorbike Saved',
       `${newBike.year} ${newBike.make} ${newBike.model} added to Wijesooriya Motors. Cost: ${formatCurrency(costPrice, settings.currencySymbol)} | Est. Profit: +${formatCurrency(estimatedProfit, settings.currencySymbol)}`,

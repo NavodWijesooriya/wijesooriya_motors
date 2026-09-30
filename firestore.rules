@@ -19,9 +19,23 @@ service cloud.firestore {
 
     match /bikes/{bikeId} {
       allow read: if signedIn() && (isAdmin() || resource.data.ownerUid == request.auth.uid);
-      allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdByEmail == request.auth.token.email
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.updatedByEmail == request.auth.token.email
+        && request.resource.data.updatedAt == request.time;
       allow update: if signedIn()
         && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.get('createdBy', null) == resource.data.get('createdBy', null)
+        && request.resource.data.get('createdByName', null) == resource.data.get('createdByName', null)
+        && request.resource.data.get('createdByEmail', null) == resource.data.get('createdByEmail', null)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.updatedByEmail == request.auth.token.email
+        && request.resource.data.updatedAt == request.time
         && (isAdmin() || resource.data.ownerUid == request.auth.uid);
       allow delete: if signedIn() && (isAdmin() || resource.data.ownerUid == request.auth.uid);
     }

@@ -18,8 +18,10 @@ import {
   Bike as BikeIcon
 } from 'lucide-react';
 import { formatCurrency, formatNumber, calculateTotalOtherCosts } from '../utils/formatters';
+import { useAuth } from '../../context/AuthContext';
 
 export const InventoryView: React.FC = () => {
+  const { isAdmin } = useAuth();
   const { 
     bikes, 
     settings, 
@@ -34,6 +36,10 @@ export const InventoryView: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
+  const [statusFilter, setStatusFilter] = useState<string>('All');
+  const [ownerFilter, setOwnerFilter] = useState('');
+  const [createdFrom, setCreatedFrom] = useState('');
+  const [createdTo, setCreatedTo] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'price-high' | 'price-low' | 'cost-high' | 'profit-high'>('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
@@ -43,21 +49,34 @@ export const InventoryView: React.FC = () => {
   const inStockBikes = useMemo(() => bikes.filter(b => b.status === 'In Stock'), [bikes]);
   const inStockCount = inStockBikes.length;
   const soldCount = useMemo(() => bikes.filter(b => b.status === 'Sold').length, [bikes]);
+  const visibleBikes = isAdmin ? bikes : inStockBikes;
 
   const filteredBikes = useMemo(() => {
-    return inStockBikes.filter((bike) => {
+    return visibleBikes.filter((bike) => {
       const query = searchQuery.toLowerCase().trim();
       const matchesSearch = 
         !query ||
+        bike.id.toLowerCase().includes(query) ||
         bike.make.toLowerCase().includes(query) ||
         bike.model.toLowerCase().includes(query) ||
         bike.vin.toLowerCase().includes(query) ||
         bike.regPlate.toLowerCase().includes(query) ||
-        bike.year.toString().includes(query);
+        bike.year.toString().includes(query) ||
+        (isAdmin && [bike.ownerUid, bike.createdBy, bike.createdByName, bike.createdByEmail]
+          .some((value) => value?.toLowerCase().includes(query)));
 
       const matchesCategory = categoryFilter === 'All' || bike.category === categoryFilter;
+      const matchesStatus = !isAdmin || statusFilter === 'All' || bike.status === statusFilter;
+      const matchesOwner = !isAdmin || !ownerFilter.trim() ||
+        bike.ownerUid?.toLowerCase().includes(ownerFilter.trim().toLowerCase());
+      const parsedCreatedDate = bike.createdAt ? new Date(bike.createdAt) : null;
+      const createdDate = parsedCreatedDate && !Number.isNaN(parsedCreatedDate.getTime())
+        ? parsedCreatedDate.toISOString().slice(0, 10)
+        : '';
+      const matchesCreatedFrom = !isAdmin || !createdFrom || createdDate >= createdFrom;
+      const matchesCreatedTo = !isAdmin || !createdTo || createdDate <= createdTo;
 
-      return matchesSearch && matchesCategory;
+      return matchesSearch && matchesCategory && matchesStatus && matchesOwner && matchesCreatedFrom && matchesCreatedTo;
     }).sort((a, b) => {
       if (sortBy === 'newest') {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -78,7 +97,7 @@ export const InventoryView: React.FC = () => {
       }
       return 0;
     });
-  }, [inStockBikes, searchQuery, categoryFilter, sortBy]);
+  }, [visibleBikes, searchQuery, categoryFilter, statusFilter, ownerFilter, createdFrom, createdTo, sortBy, isAdmin]);
 
   const [bikeToDelete, setBikeToDelete] = useState<Bike | null>(null);
 
@@ -112,13 +131,13 @@ export const InventoryView: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
-            Motorbike <span className="text-sky-400">Inventory</span>
+            {isAdmin ? <>Vehicle <span className="text-sky-400">Records</span></> : <>Motorbike <span className="text-sky-400">Inventory</span></>}
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/30 font-mono font-bold">
-              {inStockCount} In Stock
+              {isAdmin ? `${bikes.length} Total` : `${inStockCount} In Stock`}
             </span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Active showroom stock available for sale. Sold vehicles do not show here and are automatically recorded in Sales & Commissions.
+            {isAdmin ? 'All vehicle records across users, including their ownership and audit history.' : 'Active showroom stock available for sale. Sold vehicles are recorded in Sales & Commissions.'}
           </p>
         </div>
 
@@ -163,8 +182,8 @@ export const InventoryView: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search make, model, registration plate, VIN..."
-              aria-label="Search motorbikes by make, model, plate, or VIN"
+              placeholder={isAdmin ? 'Search item ID, vehicle, creator, or user UID...' : 'Search make, model, registration plate, VIN...'}
+              aria-label={isAdmin ? 'Search records by ID, vehicle, creator, or user UID' : 'Search motorbikes by make, model, plate, or VIN'}
               className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 rounded-xl pl-10 pr-4 py-2.5 min-h-[44px] text-xs sm:text-sm text-white placeholder-slate-500 outline-none transition-all font-medium"
             />
           </div>
@@ -205,12 +224,43 @@ export const InventoryView: React.FC = () => {
           </div>
         </div>
 
+        {isAdmin && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-slate-800/80">
+            <input
+              value={ownerFilter}
+              onChange={(event) => setOwnerFilter(event.target.value)}
+              placeholder="Filter by owner UID"
+              aria-label="Filter records by owner user ID"
+              className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3 py-2.5 min-h-[44px] text-xs text-white placeholder-slate-500 outline-none"
+            />
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              aria-label="Filter records by status"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 min-h-[44px] text-xs text-slate-200 outline-none"
+            >
+              <option value="All">All Statuses</option>
+              <option value="In Stock">In Stock</option>
+              <option value="Reserved">Reserved</option>
+              <option value="Sold">Sold</option>
+            </select>
+            <label className="text-[11px] text-slate-400">
+              Created from
+              <input type="date" value={createdFrom} onChange={(event) => setCreatedFrom(event.target.value)} className="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 min-h-[40px] text-xs text-white" />
+            </label>
+            <label className="text-[11px] text-slate-400">
+              Created through
+              <input type="date" value={createdTo} onChange={(event) => setCreatedTo(event.target.value)} className="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 min-h-[40px] text-xs text-white" />
+            </label>
+          </div>
+        )}
+
         <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs text-slate-400 pt-2 border-t border-slate-800/80">
           <div className="flex flex-wrap items-center gap-2">
             <span>
-              Showing <strong className="text-white font-mono">{filteredBikes.length}</strong> available in-stock motorbikes
+              Showing <strong className="text-white font-mono">{filteredBikes.length}</strong> {isAdmin ? 'vehicle records' : 'available in-stock motorbikes'}
             </span>
-            {soldCount > 0 && (
+            {!isAdmin && soldCount > 0 && (
               <button
                 type="button"
                 onClick={() => setActiveTab('sales')}
@@ -222,12 +272,16 @@ export const InventoryView: React.FC = () => {
               </button>
             )}
           </div>
-          {(searchQuery || categoryFilter !== 'All') && (
+          {(searchQuery || categoryFilter !== 'All' || statusFilter !== 'All' || ownerFilter || createdFrom || createdTo) && (
             <button
               type="button"
               onClick={() => {
                 setSearchQuery('');
                 setCategoryFilter('All');
+                setStatusFilter('All');
+                setOwnerFilter('');
+                setCreatedFrom('');
+                setCreatedTo('');
               }}
               className="text-sky-400 hover:text-sky-300 font-bold px-2 py-1 min-h-[32px] rounded-lg hover:bg-sky-500/10 transition-colors"
             >
