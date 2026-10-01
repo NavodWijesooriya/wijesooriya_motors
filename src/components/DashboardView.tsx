@@ -20,10 +20,12 @@ import {
   RefreshCw,
   BarChart3
 } from 'lucide-react';
-import { formatCurrency, formatDate } from '../utils/formatters';
+import { calculateFinancialSummary, formatCurrency, formatDate } from '../utils/formatters';
 import { MonthlySummarySection } from './MonthlySummarySection';
+import { useAuth } from '../../context/AuthContext';
 
 export const DashboardView: React.FC = () => {
+  const { isAdmin } = useAuth();
   const { 
     bikes, 
     settings, 
@@ -47,6 +49,24 @@ export const DashboardView: React.FC = () => {
   const totalCostSold = soldBikes.reduce((sum, b) => sum + (b.sale?.totalCost || 0), 0);
   const totalNetProfit = summary.totalNetProfit;
   const totalRevenue = summary.totalSalesRevenue;
+
+  const userSummaries = Array.from(
+    bikes.reduce((users, bike) => {
+      const ownerUid = bike.ownerUid || 'unassigned';
+      const existing = users.get(ownerUid);
+      if (existing) {
+        existing.bikes.push(bike);
+      } else {
+        users.set(ownerUid, {
+          ownerUid,
+          label: bike.createdByName || bike.createdByEmail || ownerUid,
+          bikes: [bike]
+        });
+      }
+      return users;
+    }, new Map<string, { ownerUid: string; label: string; bikes: typeof bikes }>()).values()
+  ).map((owner) => ({ ...owner, summary: calculateFinancialSummary(owner.bikes) }))
+    .sort((a, b) => a.label.localeCompare(b.label));
   
   const costPercent = totalRevenue > 0 ? Math.min(100, Math.round((totalCostSold / totalRevenue) * 100)) : 0;
   const profitPercent = totalRevenue > 0 ? Math.min(100, Math.round((totalNetProfit / totalRevenue) * 100)) : 0;
@@ -252,6 +272,55 @@ export const DashboardView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {isAdmin && (
+        <section className="space-y-3" aria-labelledby="admin-user-summary-title">
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h2 id="admin-user-summary-title" className="text-lg font-black text-white">All Users: Stock & Sales</h2>
+              <p className="text-xs text-slate-400">Per-user totals across all accounts, with dealership-wide totals below.</p>
+            </div>
+            <span className="text-xs font-semibold text-sky-300">{userSummaries.length} users with records</span>
+          </div>
+          <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/80">
+            <table className="w-full min-w-[760px] text-left text-xs">
+              <thead className="bg-slate-950/80 text-[10px] uppercase text-slate-400">
+                <tr>
+                  <th className="px-4 py-3 font-bold">User</th>
+                  <th className="px-4 py-3 text-right font-bold">In Stock</th>
+                  <th className="px-4 py-3 text-right font-bold">Stock Cost</th>
+                  <th className="px-4 py-3 text-right font-bold">Sold</th>
+                  <th className="px-4 py-3 text-right font-bold">Total Sales</th>
+                  <th className="px-4 py-3 text-right font-bold">Profit</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/80">
+                {userSummaries.map(({ ownerUid, label, summary: userSummary }) => (
+                  <tr key={ownerUid}>
+                    <td className="px-4 py-3">
+                      <div className="font-bold text-white">{label}</div>
+                      <div className="mt-0.5 font-mono text-[10px] text-slate-500">{ownerUid}</div>
+                    </td>
+                    <td className="px-4 py-3 text-right font-mono text-slate-200">{userSummary.totalBikesInStock}</td>
+                    <td className="px-4 py-3 text-right font-mono text-slate-200">{formatCurrency(userSummary.totalInventoryCost, symbol)}</td>
+                    <td className="px-4 py-3 text-right font-mono text-slate-200">{userSummary.totalBikesSold}</td>
+                    <td className="px-4 py-3 text-right font-mono text-slate-200">{formatCurrency(userSummary.totalSalesRevenue, symbol)}</td>
+                    <td className="px-4 py-3 text-right font-mono font-bold text-emerald-400">{formatCurrency(userSummary.totalNetProfit, symbol)}</td>
+                  </tr>
+                ))}
+                <tr className="bg-slate-950/70 font-bold">
+                  <td className="px-4 py-3 text-white">Overall</td>
+                  <td className="px-4 py-3 text-right font-mono text-white">{summary.totalBikesInStock}</td>
+                  <td className="px-4 py-3 text-right font-mono text-white">{formatCurrency(summary.totalInventoryCost, symbol)}</td>
+                  <td className="px-4 py-3 text-right font-mono text-white">{summary.totalBikesSold}</td>
+                  <td className="px-4 py-3 text-right font-mono text-white">{formatCurrency(summary.totalSalesRevenue, symbol)}</td>
+                  <td className="px-4 py-3 text-right font-mono text-emerald-400">{formatCurrency(summary.totalNetProfit, symbol)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       {/* Monthly Summary & Metric Definitions Section (Calculates strictly for selected month & year) */}
       <MonthlySummarySection />

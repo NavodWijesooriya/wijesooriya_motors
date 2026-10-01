@@ -37,13 +37,22 @@ export const InventoryView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [statusFilter, setStatusFilter] = useState<string>('All');
-  const [ownerFilter, setOwnerFilter] = useState('');
+  const [ownerFilter, setOwnerFilter] = useState('All');
   const [createdFrom, setCreatedFrom] = useState('');
   const [createdTo, setCreatedTo] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'price-high' | 'price-low' | 'cost-high' | 'profit-high'>('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   const symbol = settings.currencySymbol;
+  const ownerOptions = useMemo(() => {
+    const owners = new Map<string, string>();
+    bikes.forEach((bike) => {
+      if (bike.ownerUid && !owners.has(bike.ownerUid)) {
+        owners.set(bike.ownerUid, bike.createdByName || bike.createdByEmail || bike.ownerUid);
+      }
+    });
+    return Array.from(owners, ([uid, label]) => ({ uid, label })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [bikes]);
 
   // Bikes Inventory section strictly displays In-Stock motorbikes. Sold items do NOT show here.
   const inStockBikes = useMemo(() => bikes.filter(b => b.status === 'In Stock'), [bikes]);
@@ -67,8 +76,7 @@ export const InventoryView: React.FC = () => {
 
       const matchesCategory = categoryFilter === 'All' || bike.category === categoryFilter;
       const matchesStatus = !isAdmin || statusFilter === 'All' || bike.status === statusFilter;
-      const matchesOwner = !isAdmin || !ownerFilter.trim() ||
-        bike.ownerUid?.toLowerCase().includes(ownerFilter.trim().toLowerCase());
+      const matchesOwner = !isAdmin || ownerFilter === 'All' || bike.ownerUid === ownerFilter;
       const parsedCreatedDate = bike.createdAt ? new Date(bike.createdAt) : null;
       const createdDate = parsedCreatedDate && !Number.isNaN(parsedCreatedDate.getTime())
         ? parsedCreatedDate.toISOString().slice(0, 10)
@@ -226,13 +234,15 @@ export const InventoryView: React.FC = () => {
 
         {isAdmin && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-slate-800/80">
-            <input
+            <select
               value={ownerFilter}
               onChange={(event) => setOwnerFilter(event.target.value)}
-              placeholder="Filter by owner UID"
-              aria-label="Filter records by owner user ID"
-              className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3 py-2.5 min-h-[44px] text-xs text-white placeholder-slate-500 outline-none"
-            />
+              aria-label="Filter records by user"
+              className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3 py-2.5 min-h-[44px] text-xs text-white outline-none"
+            >
+              <option value="All">All Users</option>
+              {ownerOptions.map((owner) => <option key={owner.uid} value={owner.uid}>{owner.label}</option>)}
+            </select>
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
@@ -272,14 +282,14 @@ export const InventoryView: React.FC = () => {
               </button>
             )}
           </div>
-          {(searchQuery || categoryFilter !== 'All' || statusFilter !== 'All' || ownerFilter || createdFrom || createdTo) && (
+          {(searchQuery || categoryFilter !== 'All' || statusFilter !== 'All' || ownerFilter !== 'All' || createdFrom || createdTo) && (
             <button
               type="button"
               onClick={() => {
                 setSearchQuery('');
                 setCategoryFilter('All');
                 setStatusFilter('All');
-                setOwnerFilter('');
+                setOwnerFilter('All');
                 setCreatedFrom('');
                 setCreatedTo('');
               }}
