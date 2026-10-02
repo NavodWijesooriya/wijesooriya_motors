@@ -75,7 +75,7 @@ export const Header: React.FC = () => {
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 hidden sm:block truncate max-w-[200px] md:max-w-none">
-                {settings.dealershipName} • Colombo, Sri Lanka
+                {settings.dealershipName} • Mathammana, Minuwangoda
               </p>
             </div>
           </button>
