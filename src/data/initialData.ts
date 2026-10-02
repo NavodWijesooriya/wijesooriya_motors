@@ -3,7 +3,7 @@ import { Bike, DealershipSettings } from '../types';
 export const initialDealershipSettings: DealershipSettings = {
   dealershipName: 'Wijesooriya Motors',
   tagline: 'Premier Motorbike Dealership & Sales Management System',
-  address: 'Colombo, Sri Lanka',
+  address: 'Mathammana, Minuwangoda, Sri Lanka',
   phone: '+94 77 123 4567',
   email: 'sales@wijesooriyamotors.lk',
   taxNumber: 'LK-VAT-902148',
@@ -83,11 +83,11 @@ export const sampleBikes: Bike[] = [
       customerPhone: '+94 77 884 1920',
       customerIdNumber: '199228401928',
       customerSecondaryPhone: '+94 71 394 8821',
-      customerAddress: 'No. 42, Flower Road, Colombo 07',
+      customerAddress: 'Mathammana, Minuwangoda, Sri Lanka',
       guarantorName: 'Sunil Senanayake',
       guarantorPhone: '+94 76 991 2283',
       guarantorIdNumber: '681940128V',
-      guarantorAddress: 'No. 42, Flower Road, Colombo 07',
+      guarantorAddress: 'Mathammana, Minuwangoda, Sri Lanka',
       financeProvider: 'Central Finance Company PLC',
       financeAgreementNumber: 'CF-2026-90412',
       financeTermMonths: 48

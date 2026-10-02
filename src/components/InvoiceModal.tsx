@@ -630,7 +630,7 @@ export const InvoiceModal: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-[11px] font-bold text-slate-600 tracking-wide mt-0.2 uppercase">
-                      Premier Automotive Sales & Vehicle Management · Colombo, Sri Lanka
+                      Premier Automotive Sales & Vehicle Management · Mathammana, Minuwangoda, Sri Lanka
                     </p>
                   </div>
                 </div>
