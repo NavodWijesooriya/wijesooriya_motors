@@ -94,7 +94,7 @@ export const DashboardView: React.FC = () => {
             </div>
             
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
-              Motorbike Sales & <span className="bg-gradient-to-r from-sky-400 to-emerald-300 bg-clip-text text-transparent">Profit Command</span>
+              Vehicle Sales & <span className="bg-gradient-to-r from-sky-400 to-emerald-300 bg-clip-text text-transparent">Profit Command</span>
             </h1>
             
             <p className="text-slate-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
@@ -107,10 +107,10 @@ export const DashboardView: React.FC = () => {
               type="button"
               onClick={() => setIsAddBikeModalOpen(true)}
               className="flex items-center justify-center gap-2 px-4 sm:px-5 py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-emerald-500/25 transition-all hover:scale-105 active:scale-95 flex-1 sm:flex-initial"
-              aria-label="Add new motorbike"
+              aria-label="Add new vehicle"
             >
               <Plus className="w-4 h-4 stroke-[3]" aria-hidden="true" />
-              <span>Add Motorbike</span>
+              <span>Add Vehicle</span>
             </button>
             
             <button
@@ -369,7 +369,7 @@ export const DashboardView: React.FC = () => {
               <div>
                 <h3 className="text-base font-black text-white flex items-center gap-2">
                   <Warehouse className="w-4 h-4 text-sky-400" />
-                  Showroom Motorbikes in Stock ({inStockBikes.length})
+                  Showroom Vehicles in Stock ({inStockBikes.length})
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">Ready for sale with cost price & profit targets</p>
               </div>
@@ -440,7 +440,7 @@ export const DashboardView: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-8 text-xs text-slate-500">
-                All motorbikes have been sold! Click &quot;Add Motorbike&quot; to replenish stock.
+                All vehicles have been sold! Click &quot;Add Vehicle&quot; to replenish stock.
               </div>
             )}
           </div>
@@ -504,7 +504,7 @@ export const DashboardView: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-8 text-xs text-slate-500">
-                No completed sales yet. When you sell a motorbike, profits will appear here.
+                No completed sales yet. When you sell a vehicle, profits will appear here.
               </div>
             )}
           </div>

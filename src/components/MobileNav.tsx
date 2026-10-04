@@ -54,7 +54,7 @@ export const MobileNav: React.FC = () => {
           type="button"
           onClick={() => setIsAddBikeModalOpen(true)}
           className="flex flex-col items-center justify-center -mt-6 min-h-[48px] px-2 focus-visible:outline-none"
-          aria-label="Add new motorbike to inventory"
+          aria-label="Add new vehicle to inventory"
         >
           <div className="w-13 h-13 rounded-full bg-gradient-to-tr from-emerald-500 via-teal-400 to-sky-400 flex items-center justify-center shadow-xl shadow-emerald-500/35 active:scale-95 transition-transform border-4 border-slate-950">
             <PlusCircle className="w-7 h-7 text-slate-950 stroke-[2.75]" aria-hidden="true" />

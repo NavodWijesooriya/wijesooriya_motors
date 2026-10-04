@@ -64,7 +64,7 @@ export const FinanceSimulatorView: React.FC = () => {
           3% Finance Commission & Profit <span className="text-amber-400">Simulator</span>
         </h1>
         <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
-          Model motorbike finance deals before quoting customers. Compare Cash vs. Finance side-by-side in Sri Lankan Rupees (LKR) to see how the 3% lender commission maximizes dealership net profit.
+          Model vehicle finance deals before quoting customers. Compare Cash vs. Finance side-by-side in Sri Lankan Rupees (LKR) to see how the 3% lender commission maximizes dealership net profit.
         </p>
       </div>
 
@@ -99,7 +99,7 @@ export const FinanceSimulatorView: React.FC = () => {
 
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs">
-              <label className="text-slate-300 font-semibold">1. Motorbike Cost Price ({symbol})</label>
+              <label className="text-slate-300 font-semibold">1. Vehicle Cost Price ({symbol})</label>
               <span className="text-slate-400 font-mono">{formatCurrency(purchasePrice, symbol)}</span>
             </div>
             <div className="relative">

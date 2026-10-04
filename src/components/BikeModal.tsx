@@ -44,6 +44,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
     selectedBike, 
     addBike, 
     updateBike,
+    setActiveTab,
     settings 
   } = useDealership();
 
@@ -187,7 +188,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
     setFormError('');
 
     if (!model.trim()) {
-      setFormError('Please enter the motorbike or vehicle model name.');
+      setFormError('Please enter the vehicle or vehicle model name.');
       return;
     }
     if (numCostPrice <= 0) {
@@ -244,6 +245,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
         notes: notes.trim(),
         repairCosts: otherCosts
       });
+      setActiveTab('dashboard');
     }
 
     onClose();
@@ -263,14 +265,14 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-black uppercase tracking-widest text-sky-400 px-2 py-0.5 rounded bg-sky-500/10 border border-sky-500/30">
-                {isEdit ? 'Update Vehicle' : 'New Motorbike Entry'}
+                {isEdit ? 'Update Vehicle' : 'New Vehicle Entry'}
               </span>
               <span className="text-[11px] text-slate-400">
                 Currency: <strong className="text-white">{symbol} (LKR)</strong>
               </span>
             </div>
             <h2 id="bike-modal-title" className="text-lg sm:text-xl font-black text-white mt-1">
-              {isEdit ? `Edit ${selectedBike?.make} ${selectedBike?.model}` : 'Add Motorbike, Cost & Other Expenses'}
+              {isEdit ? `Edit ${selectedBike?.make} ${selectedBike?.model}` : 'Add Vehicle, Cost & Other Expenses'}
             </h2>
           </div>
 
@@ -281,7 +283,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
               className="hidden sm:flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-emerald-400"
             >
               <Check className="w-4 h-4 stroke-[3]" aria-hidden="true" />
-              <span>Save Motorbike</span>
+              <span>Save Vehicle</span>
             </button>
             <button
               type="button"
@@ -541,7 +543,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
                     <label className="block text-[11px] text-slate-400 mb-1">Photo URL</label>
                     <input
                       type="url"
-                      placeholder="https://... (Leave blank for default motorbike photo)"
+                      placeholder="https://... (Leave blank for default vehicle photo)"
                       value={imageUrl}
                       onChange={(e) => setImageUrl(e.target.value)}
                       className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none"
@@ -580,7 +582,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
                   <label className="block text-xs font-bold text-slate-200">
                     Cost Price ({symbol}) *
                   </label>
-                  <span className="text-[10px] text-slate-400 font-medium">Motorbike purchase cost</span>
+                  <span className="text-[10px] text-slate-400 font-medium">Vehicle purchase cost</span>
                 </div>
                 <div className="relative mt-1">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">{symbol}</span>
@@ -863,7 +865,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
               className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-8 py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 transition-all hover:scale-[1.01] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-emerald-400"
             >
               <Check className="w-5 h-5 stroke-[3]" aria-hidden="true" />
-              <span>{isEdit ? 'Save Changes' : 'Save Motorbike to Inventory'}</span>
+              <span>{isEdit ? 'Save Changes' : 'Save Vehicle to Inventory'}</span>
             </button>
           </div>
         </form>

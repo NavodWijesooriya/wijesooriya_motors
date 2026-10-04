@@ -54,7 +54,7 @@ export const InventoryView: React.FC = () => {
     return Array.from(owners, ([uid, label]) => ({ uid, label })).sort((a, b) => a.label.localeCompare(b.label));
   }, [bikes]);
 
-  // Bikes Inventory section strictly displays In-Stock motorbikes. Sold items do NOT show here.
+  // Bikes Inventory section strictly displays In-Stock vehicles. Sold items do NOT show here.
   const inStockBikes = useMemo(() => bikes.filter(b => b.status === 'In Stock'), [bikes]);
   const inStockCount = inStockBikes.length;
   const soldCount = useMemo(() => bikes.filter(b => b.status === 'Sold').length, [bikes]);
@@ -128,7 +128,7 @@ export const InventoryView: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
-            {isAdmin ? <>Vehicle <span className="text-sky-400">Records</span></> : <>Motorbike <span className="text-sky-400">Inventory</span></>}
+            {isAdmin ? <>Vehicle <span className="text-sky-400">Records</span></> : <>Vehicle <span className="text-sky-400">Inventory</span></>}
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/30 font-mono font-bold">
               {isAdmin ? `${bikes.length} Total` : `${inStockCount} In Stock`}
             </span>
@@ -165,7 +165,7 @@ export const InventoryView: React.FC = () => {
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-emerald-500/25 transition-transform active:scale-95"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
-            <span>Add Motorbike</span>
+            <span>Add Vehicle</span>
           </button>
         </div>
       </div>
@@ -180,7 +180,7 @@ export const InventoryView: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={isAdmin ? 'Search item ID, vehicle, creator, or user UID...' : 'Search make, model, registration plate, VIN...'}
-              aria-label={isAdmin ? 'Search records by ID, vehicle, creator, or user UID' : 'Search motorbikes by make, model, plate, or VIN'}
+              aria-label={isAdmin ? 'Search records by ID, vehicle, creator, or user UID' : 'Search vehicles by make, model, plate, or VIN'}
               className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 rounded-xl pl-10 pr-4 py-2.5 min-h-[44px] text-xs sm:text-sm text-white placeholder-slate-500 outline-none transition-all font-medium"
             />
           </div>
@@ -196,7 +196,7 @@ export const InventoryView: React.FC = () => {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              aria-label="Filter motorbikes by category"
+              aria-label="Filter vehicles by category"
               className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 rounded-xl px-3 py-2.5 min-h-[44px] text-xs text-slate-200 outline-none cursor-pointer"
             >
               {categories.map((c) => (
@@ -209,7 +209,7 @@ export const InventoryView: React.FC = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              aria-label="Sort motorbikes"
+              aria-label="Sort vehicles"
               className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 rounded-xl px-3 py-2.5 min-h-[44px] text-xs text-slate-200 outline-none cursor-pointer font-medium"
             >
               <option value="newest">Sort: Newest First</option>
@@ -257,7 +257,7 @@ export const InventoryView: React.FC = () => {
         <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs text-slate-400 pt-2 border-t border-slate-800/80">
           <div className="flex flex-wrap items-center gap-2">
             <span>
-              Showing <strong className="text-white font-mono">{filteredBikes.length}</strong> {isAdmin ? 'vehicle records' : 'available in-stock motorbikes'}
+              Showing <strong className="text-white font-mono">{filteredBikes.length}</strong> {isAdmin ? 'vehicle records' : 'available in-stock vehicles'}
             </span>
             {!isAdmin && soldCount > 0 && (
               <button
@@ -479,7 +479,7 @@ export const InventoryView: React.FC = () => {
                       type="button"
                       onClick={() => setBikeToDelete(bike)}
                       className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-slate-800 hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 transition-colors focus-visible:ring-2 focus-visible:ring-rose-400"
-                      title="Delete Motorbike"
+                      title="Delete Vehicle"
                       aria-label={`Delete ${bike.make} ${bike.model}`}
                     >
                       <Trash2 className="w-4 h-4" aria-hidden="true" />
@@ -499,7 +499,7 @@ export const InventoryView: React.FC = () => {
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-950/70 text-slate-400 font-bold uppercase tracking-wider text-[10px] border-b border-slate-800">
                 <tr>
-                  <th className="py-3 px-4 sm:px-6">Motorbike</th>
+                  <th className="py-3 px-4 sm:px-6">Vehicle</th>
                   <th className="py-3 px-4">Specs & Plate</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4 text-right">Cost Price</th>
@@ -633,9 +633,9 @@ export const InventoryView: React.FC = () => {
 
           {soldCount > 0 && inStockBikes.length === 0 ? (
             <>
-              <h3 className="text-lg font-black text-white">All Showroom Motorbikes Have Been Sold</h3>
+              <h3 className="text-lg font-black text-white">All Showroom Vehicles Have Been Sold</h3>
               <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-                You currently have 0 in-stock motorbikes. All {soldCount} recorded vehicle{soldCount === 1 ? '' : 's'} have been sold and are archived in the Sales Ledger and Monthly Summary.
+                You currently have 0 in-stock vehicles. All {soldCount} recorded vehicle{soldCount === 1 ? '' : 's'} have been sold and are archived in the Sales Ledger and Monthly Summary.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                 <button
@@ -643,7 +643,7 @@ export const InventoryView: React.FC = () => {
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/25 transition-transform active:scale-95"
                 >
                   <Plus className="w-4 h-4 stroke-[3]" />
-                  <span>Add New Motorbike</span>
+                  <span>Add New Vehicle</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('sales')}
@@ -656,12 +656,12 @@ export const InventoryView: React.FC = () => {
           ) : (
             <>
               <h3 className="text-lg font-black text-white">
-                No In-Stock Motorbikes Found
+                No In-Stock Vehicles Found
               </h3>
               <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
                 {searchQuery || categoryFilter !== 'All'
-                  ? 'No available motorbikes matched your search and filter criteria.'
-                  : 'Your inventory is clean and ready. Add your first motorbike to enter the cost price, log any other repair or transport costs, and track your profits.'}
+                  ? 'No available vehicles matched your search and filter criteria.'
+                  : 'Your inventory is clean and ready. Add your first vehicle to enter the cost price, log any other repair or transport costs, and track your profits.'}
               </p>
               <div className="mt-4 flex justify-center">
                 <button
@@ -669,7 +669,7 @@ export const InventoryView: React.FC = () => {
                   className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 transition-transform active:scale-95"
                 >
                   <Plus className="w-4 h-4 stroke-[3]" />
-                  <span>Add Motorbike</span>
+                  <span>Add Vehicle</span>
                 </button>
               </div>
             </>
@@ -718,7 +718,7 @@ export const InventoryView: React.FC = () => {
                 onClick={handleConfirmDelete}
                 className="px-5 py-2.5 min-h-[44px] rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black shadow-lg shadow-rose-600/25 transition-all active:scale-95"
               >
-                Delete Motorbike
+                Delete Vehicle
               </button>
             </div>
           </div>

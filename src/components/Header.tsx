@@ -141,7 +141,7 @@ export const Header: React.FC = () => {
             <button
               onClick={() => setIsAddBikeModalOpen(true)}
               className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-emerald-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
-              aria-label="Add new motorbike to inventory"
+              aria-label="Add new vehicle to inventory"
             >
               <PlusCircle className="w-4 h-4 text-slate-950 shrink-0" aria-hidden="true" />
               <span>Add Bike</span>

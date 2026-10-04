@@ -83,9 +83,9 @@ export const SaleModal: React.FC = () => {
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full text-center">
           <AlertCircle className="w-10 h-10 text-amber-400 mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-white">No In-Stock Motorbikes</h3>
+          <h3 className="text-lg font-bold text-white">No In-Stock Vehicles</h3>
           <p className="text-xs text-slate-400 mt-1 mb-4">
-            You currently have no motorbikes in stock to sell. Please add a motorbike first.
+            You currently have no vehicles in stock to sell. Please add a vehicle first.
           </p>
           <button
             onClick={() => setIsSaleModalOpen(false)}
@@ -219,7 +219,7 @@ export const SaleModal: React.FC = () => {
               </span>
             </div>
             <h2 id="sale-modal-title" className="text-lg sm:text-xl font-black text-white mt-1">
-              Record Motorbike Sale ({saleMethod === 'Finance' ? 'Finance Sale' : 'Cash Sale'})
+              Record Vehicle Sale ({saleMethod === 'Finance' ? 'Finance Sale' : 'Cash Sale'})
             </h2>
           </div>
           <button
@@ -246,7 +246,7 @@ export const SaleModal: React.FC = () => {
             </div>
           )}
 
-          {/* Motorbike Selection */}
+          {/* Vehicle Selection */}
           <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <img
@@ -255,7 +255,7 @@ export const SaleModal: React.FC = () => {
                 className="w-14 h-14 rounded-xl object-cover border border-slate-800"
               />
               <div>
-                <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider">Selected Motorbike</span>
+                <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider">Selected Vehicle</span>
                 <div className="text-base font-black text-white">
                   {activeBike.year} {activeBike.make} {activeBike.model}
                 </div>

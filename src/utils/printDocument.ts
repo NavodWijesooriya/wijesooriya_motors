@@ -513,7 +513,7 @@ export const buildFormalLetterPlainText = (
   }
 
   text += `CERTIFICATION & WARRANTY:\n`;
-  text += `${settings.dealershipName} certifies that the aforementioned motorbike is transferred free from any undisclosed encumbrances, legal liens, or ownership disputes, and that full delivery of the vehicle documents, revenue license, and keys have been tendered.\n\n`;
+  text += `${settings.dealershipName} certifies that the aforementioned vehicle is transferred free from any undisclosed encumbrances, legal liens, or ownership disputes, and that full delivery of the vehicle documents, revenue license, and keys have been tendered.\n\n`;
 
   text += `Yours faithfully,\n\n`;
   text += `___________________________________        ___________________________________\n`;

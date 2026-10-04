@@ -410,7 +410,7 @@ export const InvoiceModal: React.FC = () => {
               </p>
             </div>
 
-            {/* 4. Section 1: Motorbike Particulars Schedule */}
+            {/* 4. Section 1: Vehicle Particulars Schedule */}
             <div className="space-y-1">
               <div className="rounded-xl border border-slate-200 overflow-hidden bg-white">
                 <table className="w-full text-left text-xs border-collapse">

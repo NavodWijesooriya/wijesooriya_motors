@@ -428,7 +428,7 @@ export const BikeDetailModal: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-3 text-xs text-slate-500 bg-slate-900/50 rounded-lg border border-dashed border-slate-800">
-                No additional other costs recorded for this motorbike.
+                No additional other costs recorded for this vehicle.
               </div>
             )}
           </div>

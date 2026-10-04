@@ -209,7 +209,7 @@ export const SalesView: React.FC = () => {
             </span>
           </div>
           <div className="mt-auto pt-2 border-t border-slate-800/80 text-xs text-slate-400 min-h-[28px] flex items-center shrink-0">
-            {displaySummary.totalBikesSold} motorbikes sold
+            {displaySummary.totalBikesSold} vehicles sold
           </div>
         </div>
 
@@ -452,7 +452,7 @@ export const SalesView: React.FC = () => {
                   <button
                     onClick={() => setSaleToRevert(bike)}
                     className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-xl bg-slate-900 hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 text-xs font-semibold transition-colors border border-slate-800 focus-visible:ring-2 focus-visible:ring-rose-400"
-                    title="Void sale and return motorbike to inventory"
+                    title="Void sale and return vehicle to inventory"
                     aria-label={`Void sale of ${sale.bikeSummary}`}
                   >
                     <RotateCcw className="w-4 h-4" aria-hidden="true" />
@@ -471,7 +471,7 @@ export const SalesView: React.FC = () => {
             </div>
             <h3 className="text-base font-bold text-white">No sales transactions recorded yet</h3>
             <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
-              Select any in-stock motorbike in your inventory and click &quot;Record Sale&quot; to execute a Cash or Finance transaction.
+              Select any in-stock vehicle in your inventory and click &quot;Record Sale&quot; to execute a Cash or Finance transaction.
             </p>
           </div>
         )}
@@ -495,7 +495,7 @@ export const SalesView: React.FC = () => {
                   Void Sale Transaction?
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  This will return the motorbike to active showroom inventory.
+                  This will return the vehicle to active showroom inventory.
                 </p>
               </div>
             </div>

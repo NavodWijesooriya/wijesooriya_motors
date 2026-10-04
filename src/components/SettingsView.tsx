@@ -369,7 +369,7 @@ export const SettingsView: React.FC = () => {
                   Clear All Data?
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  This will erase all motorbike inventory and sales records from local storage.
+                  This will erase all vehicle inventory and sales records from local storage.
                 </p>
               </div>
             </div>

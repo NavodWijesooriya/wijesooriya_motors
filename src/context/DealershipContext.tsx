@@ -392,7 +392,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       createdByEmail: user?.email || '',
       vehicleType: data.vehicleType || 'Bike',
       make: data.make?.trim() || 'Honda',
-      model: data.model?.trim() || 'Motorbike',
+      model: data.model?.trim() || 'Vehicle',
       year: Number(data.year) || new Date().getFullYear(),
       category: data.category || 'Manual',
       vin: data.vin?.toUpperCase().trim() || `VIN-${Date.now().toString().slice(-8)}`,
@@ -417,7 +417,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     setBikes((prev) => [newBike, ...prev]);
     persistBike(newBike, true);
     showToast(
-      'Motorbike Saved',
+      'Vehicle Saved',
       `${newBike.year} ${newBike.make} ${newBike.model} added to ${profile?.businessName || 'your business'}. Cost: ${formatCurrency(costPrice, settings.currencySymbol)} | Est. Profit: +${formatCurrency(estimatedProfit, settings.currencySymbol)}`,
       'success'
     );
@@ -461,7 +461,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
 
     setBikes((prev) => prev.map((item) => item.id === id ? updated : item));
     persistBike(updated);
-    showToast('Motorbike Updated', 'Cost price, other costs, and profit calculations updated.', 'success');
+    showToast('Vehicle Updated', 'Cost price, other costs, and profit calculations updated.', 'success');
   };
 
   const deleteBike = async (id: string) => {
@@ -479,7 +479,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       setIsDetailModalOpen(false);
       setIsEditBikeModalOpen(false);
     }
-    showToast('Motorbike Deleted', `${bikeToDelete ? `${bikeToDelete.make} ${bikeToDelete.model}` : 'Bike'} removed.`, 'info');
+    showToast('Vehicle Deleted', `${bikeToDelete ? `${bikeToDelete.make} ${bikeToDelete.model}` : 'Bike'} removed.`, 'info');
   };
 
   const recordSale = (bikeId: string, saleData: Omit<SaleRecord, 'id' | 'bikeId'>): SaleRecord => {
@@ -521,7 +521,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     const updatedBike = { ...rest, status: 'In Stock' as const, updatedAt: new Date().toISOString() };
     setBikes((prev) => prev.map((item) => item.id === bikeId ? updatedBike : item));
     persistBike(updatedBike);
-    showToast('Sale Voided', 'Motorbike returned to In Stock inventory.', 'info');
+    showToast('Sale Voided', 'Vehicle returned to In Stock inventory.', 'info');
   };
 
   const addRepairItem = (bikeId: string, item: Omit<OtherCostItem, 'id'>) => {
@@ -597,7 +597,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const clearAllData = () => {
     replaceVisibleBikes([]);
-    showToast('Data Cleared', 'All inventory motorbikes and sales have been cleared.', 'info');
+    showToast('Data Cleared', 'All inventory vehicles and sales have been cleared.', 'info');
   };
 
   const exportDataToJson = () => {
@@ -640,7 +640,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
           setSettings(importedSettings);
           persistSettings(importedSettings);
         }
-        showToast('Backup Restored', `Restored ${data.bikes.length} motorbikes from JSON.`, 'success');
+        showToast('Backup Restored', `Restored ${data.bikes.length} vehicles from JSON.`, 'success');
         return true;
       }
       throw new Error('Invalid JSON structure');

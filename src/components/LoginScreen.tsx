@@ -54,7 +54,7 @@ export const LoginScreen: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Sales POS</h1>
 
           <p className="text-xs text-slate-400 font-medium mt-1">
-            Motorbike Dealership & Sales Management System
+            Vehicle Dealership & Sales Management System
           </p>
 
           <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-300 text-[11px] font-bold">
