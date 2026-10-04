@@ -146,18 +146,17 @@ export const LoginScreen: React.FC = () => {
             ) : (
               <LogIn className="w-4 h-4 stroke-[3]" aria-hidden="true" />
             )}
-            <span>Sign In to Terminal</span>
+            <span>Sign In</span>
           </button>
 
         </form>
 
         {/* Card Footer */}
-        <div className="p-4 bg-slate-950/80 border-t border-slate-800/60 text-center text-[11px] text-slate-500">
+        {/* <div className="p-4 bg-slate-950/80 border-t border-slate-800/60 text-center text-[11px] text-slate-500">
           Sri Lankan Rupees (LKR) • 3% Finance Commission • PWA Offline Ready
-        </div>
+        </div> */}
       </div>
 
-      {/* Page Footnote */}
       <div className="mt-8 text-center text-xs text-slate-600">
         © {new Date().getFullYear()} {settings.dealershipName} • All rights reserved
       </div>

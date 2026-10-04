@@ -53,7 +53,7 @@ interface DealershipContextType {
   // Actions
   addBike: (data: Partial<Bike>) => Bike;
   updateBike: (id: string, updates: Partial<Bike>) => void;
-  deleteBike: (id: string) => void;
+  deleteBike: (id: string) => Promise<void>;
   recordSale: (bikeId: string, saleData: Omit<SaleRecord, 'id' | 'bikeId'>) => SaleRecord;
   revertSale: (bikeId: string) => void;
   addRepairItem: (bikeId: string, item: Omit<OtherCostItem, 'id'>) => void;
@@ -374,13 +374,15 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     showToast('Motorbike Updated', 'Cost price, other costs, and profit calculations updated.', 'success');
   };
 
-  const deleteBike = (id: string) => {
+  const deleteBike = async (id: string) => {
     const bikeToDelete = bikes.find((b) => b.id === id);
-    setBikes((prev) => prev.filter((b) => b.id !== id));
-    void deleteDoc(doc(db, 'bikes', id)).catch((error) => {
+    try {
+      await deleteDoc(doc(db, 'bikes', id));
+    } catch (error) {
       console.error('Failed to delete dealership record', error);
       showToast('Delete Failed', 'The record could not be removed from the database.', 'error');
-    });
+      return;
+    }
     if (selectedBike?.id === id) {
       setSelectedBike(null);
       setIsDetailModalOpen(false);

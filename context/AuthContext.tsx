@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { LoadingScreen } from '../src/components/LoadingScreen';
 
 const AuthContext = createContext<{ user: User | null; isAdmin: boolean }>({ user: null, isAdmin: false });
 
@@ -43,7 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{ user, isAdmin }}>
-      {loading ? <div>Loading Auth...</div> : children}
+      {loading ? <LoadingScreen /> : children}
     </AuthContext.Provider>
   );
 };
