@@ -140,6 +140,9 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
         return {
           ...data,
           id: bikeDoc.id,
+          vehicleType: data.vehicleType === 'Car' ? 'Light Vehicle' : data.vehicleType || 'Bike',
+          category: data.category === 'Auto' ? 'Auto' : 'Manual',
+          condition: data.condition === 'Brand New' ? 'Brand New' : 'Used',
           createdAt: toIsoString(data.createdAt),
           updatedAt: toIsoString(data.updatedAt)
         } as Bike;
@@ -304,13 +307,13 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       make: data.make?.trim() || 'Honda',
       model: data.model?.trim() || 'Motorbike',
       year: Number(data.year) || new Date().getFullYear(),
-      category: data.category || 'Standard / Commuter',
+      category: data.category || 'Manual',
       vin: data.vin?.toUpperCase().trim() || `VIN-${Date.now().toString().slice(-8)}`,
       regPlate: data.regPlate?.toUpperCase().trim() || 'UNREG',
       mileage: Number(data.mileage) || 0,
       color: data.color?.trim() || 'Black',
       engineCapacityCc: Number(data.engineCapacityCc) || 125,
-      condition: data.condition || 'Excellent',
+      condition: data.condition || 'Used',
       purchasePrice: costPrice,
       purchaseDate: data.purchaseDate || new Date().toISOString().split('T')[0],
       supplierOrSeller: data.supplierOrSeller?.trim() || 'Direct Purchase',

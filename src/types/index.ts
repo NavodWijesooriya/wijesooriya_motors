@@ -1,23 +1,8 @@
-export type VehicleType = 'Bike' | 'Car';
+export type VehicleType = 'Light Vehicle' | 'Bike' | 'Three-Wheeler' | 'Heavy Vehicle';
 
-export type BikeCategory = 
-  | 'Sport' 
-  | 'Cruiser' 
-  | 'Adventure' 
-  | 'Naked' 
-  | 'Touring' 
-  | 'Scooter' 
-  | 'Off-Road' 
-  | 'Cafe Racer' 
-  | 'Standard / Commuter'
-  | 'Sedan'
-  | 'SUV'
-  | 'Hatchback'
-  | 'Van / Wagon'
-  | 'Pickup Truck'
-  | 'Coupe';
+export type BikeCategory = 'Auto' | 'Manual';
 
-export type BikeCondition = 'Brand New' | 'Excellent' | 'Good' | 'Fair';
+export type BikeCondition = 'Brand New' | 'Used';
 
 export type BikeStatus = 'In Stock' | 'Reserved' | 'Sold';
 
@@ -199,4 +184,3 @@ export interface AuthUser {
   role: 'Administrator' | 'Sales Manager' | 'Staff';
   lastLogin: string;
 }
-

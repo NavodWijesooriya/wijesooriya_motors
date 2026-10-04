@@ -254,11 +254,10 @@ export const calculateMonthlySummary = (
 
   soldInMonth.forEach((b) => {
     const sale = b.sale!;
-    const isCar = b.vehicleType === 'Car';
-    if (isCar) {
-      carsSold++;
-    } else {
+    if (b.vehicleType === 'Bike') {
       bikesSold++;
+    } else {
+      carsSold++;
     }
 
     const saleAmount = Number(sale.saleAmount) || 0;

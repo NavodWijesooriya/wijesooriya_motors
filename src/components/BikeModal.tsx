@@ -24,6 +24,7 @@ interface BikeModalProps {
 
 const BIKE_MAKES = ['Honda', 'Yamaha', 'Bajaj', 'TVS', 'Hero', 'Suzuki', 'Kawasaki', 'KTM', 'Royal Enfield'];
 const CAR_MAKES = ['Toyota', 'Suzuki', 'Nissan', 'Honda', 'Hyundai', 'Mitsubishi', 'Kia', 'Daihatsu', 'Mazda', 'Mercedes-Benz'];
+const VEHICLE_TYPES: VehicleType[] = ['Light Vehicle', 'Bike', 'Three-Wheeler', 'Heavy Vehicle'];
 
 const OTHER_COST_CATEGORIES: { label: string; category: OtherCostCategory; icon: any }[] = [
   { label: 'Repair', category: 'Repair', icon: Wrench },
@@ -56,8 +57,8 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
   const [make, setMake] = useState('Honda');
   const [model, setModel] = useState('');
   const [year, setYear] = useState<number>(new Date().getFullYear());
-  const [category, setCategory] = useState<BikeCategory>('Standard / Commuter');
-  const [condition, setCondition] = useState<BikeCondition>('Excellent');
+  const [category, setCategory] = useState<BikeCategory>('Manual');
+  const [condition, setCondition] = useState<BikeCondition>('Used');
   const [regPlate, setRegPlate] = useState('');
   const [isUnregistered, setIsUnregistered] = useState(false);
 
@@ -114,14 +115,14 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
       setMake('Honda');
       setModel('');
       setYear(new Date().getFullYear());
-      setCategory('Standard / Commuter');
+      setCategory('Manual');
       setVin('');
       setRegPlate('');
       setIsUnregistered(false);
       setMileage('');
       setColor('Black');
       setEngineCapacityCc(125);
-      setCondition('Excellent');
+      setCondition('Used');
       setCostPrice('');
       setPurchaseDate(new Date().toISOString().split('T')[0]);
       setSupplierOrSeller('');
@@ -322,38 +323,20 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
             <div>
               <label className="block text-[11px] font-semibold text-slate-400 mb-1.5">Vehicle Type *</label>
               <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setVehicleType('Bike');
-                    if (category === 'Sedan') setCategory('Standard / Commuter');
-                    if (make === 'Toyota') setMake('Honda');
-                  }}
-                  className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl border font-bold text-xs transition-all ${
-                    vehicleType === 'Bike'
-                      ? 'bg-sky-500 text-slate-950 border-sky-400 shadow-md font-black'
-                      : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <span className="text-sm">🏍️</span>
-                  <span>Motorbike / Two-Wheeler</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setVehicleType('Car');
-                    if (category === 'Standard / Commuter') setCategory('Sedan');
-                    if (make === 'Bajaj' || make === 'TVS') setMake('Toyota');
-                  }}
-                  className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl border font-bold text-xs transition-all ${
-                    vehicleType === 'Car'
-                      ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md font-black'
-                      : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <span className="text-sm">🚗</span>
-                  <span>Car / Four-Wheeler</span>
-                </button>
+                {VEHICLE_TYPES.map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setVehicleType(type)}
+                    className={`flex items-center justify-center py-2 px-3 rounded-xl border font-bold text-xs transition-all ${
+                      vehicleType === type
+                        ? 'bg-sky-500 text-slate-950 border-sky-400 shadow-md font-black'
+                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -361,7 +344,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
             <div>
               <label className="block text-[11px] font-semibold text-slate-400 mb-1.5">Brand / Make *</label>
               <div className="flex flex-wrap gap-1.5 mb-2">
-                {(vehicleType === 'Car' ? CAR_MAKES : BIKE_MAKES).map((m) => (
+                {(vehicleType === 'Bike' ? BIKE_MAKES : CAR_MAKES).map((m) => (
                   <button
                     key={m}
                     type="button"
@@ -423,15 +406,8 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
                   onChange={(e) => setCategory(e.target.value as BikeCategory)}
                   className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-sky-500"
                 >
-                  <option value="Standard / Commuter">Standard / Commuter</option>
-                  <option value="Scooter">Scooter / Automatic</option>
-                  <option value="Sport">Sport / Superbike</option>
-                  <option value="Naked">Naked</option>
-                  <option value="Cruiser">Cruiser</option>
-                  <option value="Adventure">Adventure / Dual-Sport</option>
-                  <option value="Cafe Racer">Cafe Racer / Retro</option>
-                  <option value="Touring">Touring</option>
-                  <option value="Off-Road">Off-Road</option>
+                  <option value="Auto">Auto</option>
+                  <option value="Manual">Manual</option>
                 </select>
               </div>
 
@@ -469,11 +445,121 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
                   className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-sky-500"
                 >
                   <option value="Brand New">Brand New</option>
-                  <option value="Excellent">Excellent</option>
-                  <option value="Good">Good</option>
-                  <option value="Fair">Fair</option>
+                  <option value="Used">Used</option>
                 </select>
               </div>
+            </div>
+
+            <div className="border border-slate-800 rounded-xl overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowAdvancedSpecs(!showAdvancedSpecs)}
+                className="w-full p-3.5 bg-slate-950/80 hover:bg-slate-950 flex items-center justify-between text-xs font-bold text-slate-300 transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-sky-400" />
+                  Additional Details (Optional)
+                </span>
+                <span className="text-[11px] text-sky-400">
+                  {showAdvancedSpecs ? 'Hide' : '+ Expand Optional Details'}
+                </span>
+              </button>
+
+              {showAdvancedSpecs && (
+                <div className="p-4 bg-slate-950/40 border-t border-slate-800 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Mileage / Odometer (km)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="e.g. 15000"
+                        value={mileage}
+                        onChange={(e) => setMileage(e.target.value === '' ? '' : Number(e.target.value))}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Engine Capacity (cc)</label>
+                      <input
+                        type="number"
+                        min="50"
+                        max="2500"
+                        placeholder="e.g. 125, 150, 250"
+                        value={engineCapacityCc}
+                        onChange={(e) => setEngineCapacityCc(e.target.value === '' ? '' : Number(e.target.value))}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Color / Finish</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Gloss Red / Black"
+                        value={color}
+                        onChange={(e) => setColor(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Chassis / VIN Number</label>
+                      <input
+                        type="text"
+                        placeholder="VIN or Chassis Number"
+                        value={vin}
+                        onChange={(e) => setVin(e.target.value.toUpperCase())}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Purchase Date</label>
+                      <input
+                        type="date"
+                        value={purchaseDate}
+                        onChange={(e) => setPurchaseDate(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Supplier / Trade-in Source</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Private Seller, Auction"
+                        value={supplierOrSeller}
+                        onChange={(e) => setSupplierOrSeller(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1">Photo URL</label>
+                    <input
+                      type="url"
+                      placeholder="https://... (Leave blank for default motorbike photo)"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1">Vehicle Notes & Remarks</label>
+                    <textarea
+                      rows={2}
+                      placeholder="Documentation notes, accessories included, ownership details..."
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white outline-none"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -760,119 +846,6 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Section 5: Optional Additional Specifications */}
-          <div className="border border-slate-800 rounded-xl overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setShowAdvancedSpecs(!showAdvancedSpecs)}
-              className="w-full p-3.5 bg-slate-950/80 hover:bg-slate-950 flex items-center justify-between text-xs font-bold text-slate-300 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <SlidersHorizontal className="w-3.5 h-3.5 text-sky-400" />
-                Additional Details (Odometer, Engine CC, VIN, Photo URL, Notes)
-              </span>
-              <span className="text-[11px] text-sky-400">
-                {showAdvancedSpecs ? 'Hide' : '+ Expand Optional Specs'}
-              </span>
-            </button>
-
-            {showAdvancedSpecs && (
-              <div className="p-4 bg-slate-950/40 border-t border-slate-800 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-[11px] text-slate-400 mb-1">Mileage / Odometer (km)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="e.g. 15000"
-                      value={mileage}
-                      onChange={(e) => setMileage(e.target.value === '' ? '' : Number(e.target.value))}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-slate-400 mb-1">Engine Capacity (cc)</label>
-                    <input
-                      type="number"
-                      min="50"
-                      max="2500"
-                      placeholder="e.g. 125, 150, 250"
-                      value={engineCapacityCc}
-                      onChange={(e) => setEngineCapacityCc(e.target.value === '' ? '' : Number(e.target.value))}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-slate-400 mb-1">Color / Finish</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Gloss Red / Black"
-                      value={color}
-                      onChange={(e) => setColor(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-slate-400 mb-1">Chassis / VIN Number</label>
-                    <input
-                      type="text"
-                      placeholder="VIN or Chassis Number"
-                      value={vin}
-                      onChange={(e) => setVin(e.target.value.toUpperCase())}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-slate-400 mb-1">Purchase Date</label>
-                    <input
-                      type="date"
-                      value={purchaseDate}
-                      onChange={(e) => setPurchaseDate(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-slate-400 mb-1">Supplier / Trade-in Source</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Private Seller, Auction"
-                      value={supplierOrSeller}
-                      onChange={(e) => setSupplierOrSeller(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] text-slate-400 mb-1">Photo URL</label>
-                  <input
-                    type="url"
-                    placeholder="https://... (Leave blank for default motorbike photo)"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] text-slate-400 mb-1">Vehicle Notes & Remarks</label>
-                  <textarea
-                    rows={2}
-                    placeholder="Documentation notes, accessories included, ownership details..."
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white outline-none"
-                  />
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Bottom Action Footer */}

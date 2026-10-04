@@ -633,7 +633,8 @@ export const MonthlySummaryView: React.FC = () => {
                 <div className="md:hidden space-y-3">
                   {soldVehiclesInMonth.map((bike) => {
                     const sale = bike.sale!;
-                    const isCar = bike.vehicleType === 'Car';
+                    const vehicleType = bike.vehicleType || 'Bike';
+                    const vehicleIcon = vehicleType === 'Bike' ? '🏍️' : vehicleType === 'Three-Wheeler' ? '🛺' : vehicleType === 'Heavy Vehicle' ? '🚚' : '🚗';
                     const isFinance = sale.saleMethod === 'Finance';
                     const vehicleCost = Number(sale.purchasePrice ?? bike.purchasePrice) || 0;
                     const expenses = Number(sale.totalRepairCost) || 0;
@@ -646,11 +647,11 @@ export const MonthlySummaryView: React.FC = () => {
                         <div className="flex items-start justify-between gap-2 pb-2.5 border-b border-slate-800/80">
                           <div>
                             <div className="font-bold text-white flex items-center gap-1.5 text-sm">
-                              <span>{isCar ? '🚗' : '🏍️'}</span>
+                              <span>{vehicleIcon}</span>
                               <span>{bike.year} {bike.make} {bike.model}</span>
                             </div>
                             <div className="text-xs text-slate-400 font-mono mt-0.5">
-                              {bike.regPlate} • {bike.category}
+                              {bike.regPlate} • {vehicleType} • {bike.category}
                             </div>
                           </div>
 
@@ -720,7 +721,8 @@ export const MonthlySummaryView: React.FC = () => {
                     <tbody className="divide-y divide-slate-800/80">
                       {soldVehiclesInMonth.map((bike) => {
                         const sale = bike.sale!;
-                        const isCar = bike.vehicleType === 'Car';
+                        const vehicleType = bike.vehicleType || 'Bike';
+                        const vehicleIcon = vehicleType === 'Bike' ? '🏍️' : vehicleType === 'Three-Wheeler' ? '🛺' : vehicleType === 'Heavy Vehicle' ? '🚚' : '🚗';
                         const isFinance = sale.saleMethod === 'Finance';
                         const vehicleCost = Number(sale.purchasePrice ?? bike.purchasePrice) || 0;
                         const expenses = Number(sale.totalRepairCost) || 0;
@@ -729,7 +731,7 @@ export const MonthlySummaryView: React.FC = () => {
                           <tr key={bike.id} className="hover:bg-slate-900/40 transition-colors">
                             <td className="py-3.5 px-4">
                               <div className="font-bold text-white flex items-center gap-1.5">
-                                <span>{isCar ? '🚗' : '🏍️'}</span>
+                                <span>{vehicleIcon}</span>
                                 <span>{bike.year} {bike.make} {bike.model}</span>
                               </div>
                               <div className="text-[10px] text-slate-400 font-mono">

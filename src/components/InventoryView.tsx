@@ -110,20 +110,9 @@ export const InventoryView: React.FC = () => {
   const [bikeToDelete, setBikeToDelete] = useState<Bike | null>(null);
 
   const categories = [
-    'All', 
-    'Standard / Commuter', 
-    'Scooter', 
-    'Sport', 
-    'Cruiser', 
-    'Adventure', 
-    'Naked', 
-    'Cafe Racer', 
-    'Touring', 
-    'Off-Road',
-    'Sedan',
-    'Hatchback',
-    'SUV',
-    'Van / Wagon'
+    'All',
+    'Auto',
+    'Manual'
   ];
 
   const handleConfirmDelete = () => {
