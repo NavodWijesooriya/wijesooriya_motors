@@ -1,19 +1,9 @@
-const CACHE_NAME = 'sales-pos-v2';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.svg',
-  '/icon-512.svg'
-];
+const CACHE_PREFIX = 'sales-pos-';
+const CACHE_NAME = `${CACHE_PREFIX}__PWA_BUILD_ID__`;
+const MAX_RUNTIME_ASSETS = 100;
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
-  );
-  self.skipWaiting();
+  event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', (event) => {
@@ -21,52 +11,104 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
+          if (key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME) {
             return caches.delete(key);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
+});
+
+async function trimCache(cache) {
+  const keys = await cache.keys();
+  await Promise.all(
+    keys.slice(0, Math.max(0, keys.length - MAX_RUNTIME_ASSETS))
+      .map((request) => cache.delete(request))
+  );
+}
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    event.waitUntil(self.skipWaiting());
+  }
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  const request = event.request;
+  if (request.method !== 'GET') return;
 
-  const url = new URL(event.request.url);
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
 
-  if (event.request.mode === 'navigate') {
+  if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match('/index.html') || caches.match('/');
+      fetch(request).then(async (response) => {
+        if (response.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put('/', response.clone());
+          await trimCache(cache);
+        }
+        return response;
+      }).catch(async () => {
+        const cachedPage = await caches.match('/');
+        if (cachedPage) return cachedPage;
+        return new Response('You are offline. Reconnect to load the latest version.', {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+        });
       })
     );
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((networkResponse) => {
-        if (
-          networkResponse &&
-          networkResponse.status === 200 &&
-          (url.pathname.endsWith('.js') ||
-           url.pathname.endsWith('.css') ||
-           url.pathname.endsWith('.svg') ||
-           url.pathname.endsWith('.png') ||
-           url.pathname.endsWith('.woff2'))
-        ) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+  const isApplicationAsset =
+    request.destination === 'script' ||
+    request.destination === 'style' ||
+    /\.(?:js|css)$/i.test(url.pathname);
+
+  if (isApplicationAsset) {
+    event.respondWith(
+      fetch(request).then(async (response) => {
+        if (response.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(request, response.clone());
+          await trimCache(cache);
         }
-        return networkResponse;
-      }).catch(() => {});
-    })
-  );
+        return response;
+      }).catch(async () => {
+        const cachedAsset = await caches.match(request);
+        if (cachedAsset) return cachedAsset;
+        return new Response('Application asset unavailable while offline.', {
+          status: 503,
+          statusText: 'Service Unavailable',
+        });
+      })
+    );
+    return;
+  }
+
+  if (request.destination === 'image' || request.destination === 'font') {
+    const cachePromise = caches.open(CACHE_NAME);
+    const networkRequest = cachePromise.then((cache) => fetch(request).then(async (response) => {
+      if (response.ok) {
+        await cache.put(request, response.clone());
+        await trimCache(cache);
+      }
+      return response;
+    }));
+    event.waitUntil(networkRequest.then(() => undefined, (error) => {
+      console.warn('Failed to refresh a cached PWA image or font', error);
+    }));
+    event.respondWith(
+      cachePromise.then(async (cache) => {
+        const cachedAsset = await cache.match(request);
+        if (cachedAsset) {
+          return cachedAsset;
+        }
+        return networkRequest;
+      })
+    );
+  }
 });

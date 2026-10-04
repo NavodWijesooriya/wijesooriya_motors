@@ -22,6 +22,7 @@ import { InvoiceModal } from './components/InvoiceModal';
 import { LoginScreen } from './components/LoginScreen';
 import { BusinessNameSetup } from './components/BusinessNameSetup';
 import { LoadingScreen } from './components/LoadingScreen';
+import { PWAUpdateNotice } from './components/PWAUpdateNotice';
 import { Bike as BikeIcon } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
@@ -132,7 +133,10 @@ export default function App() {
   return (
     <AuthProvider>
       <DealershipProvider>
-        <MainLayout />
+        <>
+          <MainLayout />
+          <PWAUpdateNotice />
+        </>
       </DealershipProvider>
     </AuthProvider>
   );
