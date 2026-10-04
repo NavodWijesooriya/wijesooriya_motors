@@ -6,6 +6,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isOwnUser(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
     function isAdmin() {
       return signedIn()
         && exists(/databases/$(database)/documents/userRoles/$(request.auth.uid))
@@ -13,35 +17,50 @@ service cloud.firestore {
     }
 
     match /userRoles/{userId} {
-      allow get: if signedIn() && (request.auth.uid == userId || isAdmin());
+      allow get: if isOwnUser(userId);
       allow list, write: if false;
     }
 
-    match /bikes/{bikeId} {
-      allow read: if signedIn() && (isAdmin() || resource.data.ownerUid == request.auth.uid);
-      allow create: if signedIn()
-        && request.resource.data.ownerUid == request.auth.uid
-        && request.resource.data.createdBy == request.auth.uid
-        && request.resource.data.createdByEmail == request.auth.token.email
+    match /users/{userId} {
+      allow get: if isOwnUser(userId);
+      allow list, delete: if false;
+      allow create: if isOwnUser(userId)
+        && request.resource.data.keys().hasOnly(['businessName', 'email', 'role', 'createdAt', 'updatedAt'])
+        && request.resource.data.keys().hasAll(['businessName', 'email', 'role', 'createdAt', 'updatedAt'])
+        && request.resource.data.businessName is string
+        && request.resource.data.businessName.size() > 0
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.role == (isAdmin() ? 'admin' : 'user')
         && request.resource.data.createdAt == request.time
-        && request.resource.data.updatedBy == request.auth.uid
-        && request.resource.data.updatedByEmail == request.auth.token.email
         && request.resource.data.updatedAt == request.time;
-      allow update: if signedIn()
-        && request.resource.data.ownerUid == resource.data.ownerUid
-        && request.resource.data.get('createdBy', null) == resource.data.get('createdBy', null)
-        && request.resource.data.get('createdByName', null) == resource.data.get('createdByName', null)
-        && request.resource.data.get('createdByEmail', null) == resource.data.get('createdByEmail', null)
+      allow update: if isOwnUser(userId)
+        && request.resource.data.keys().hasOnly(['businessName', 'email', 'role', 'createdAt', 'updatedAt'])
+        && request.resource.data.businessName is string
+        && request.resource.data.businessName.size() > 0
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.role == resource.data.role
         && request.resource.data.createdAt == resource.data.createdAt
-        && request.resource.data.updatedBy == request.auth.uid
-        && request.resource.data.updatedByEmail == request.auth.token.email
-        && request.resource.data.updatedAt == request.time
-        && (isAdmin() || resource.data.ownerUid == request.auth.uid);
-      allow delete: if signedIn() && (isAdmin() || resource.data.ownerUid == request.auth.uid);
+        && request.resource.data.updatedAt == request.time;
+
+      match /{collectionName}/{documentId} {
+        allow read, write: if isOwnUser(userId);
+      }
+
+      match /{collectionName}/{documentId}/{nestedDocument=**} {
+        allow read, write: if isOwnUser(userId);
+      }
+    }
+
+    // Legacy data remains readable by its recorded owner for one-time migration.
+    // All new writes must use the user's private document tree.
+    match /bikes/{bikeId} {
+      allow get, list: if signedIn() && resource.data.ownerUid == request.auth.uid;
+      allow create, update, delete: if false;
     }
 
     match /userSettings/{userId} {
-      allow read, write: if signedIn() && (isAdmin() || request.auth.uid == userId);
+      allow get: if isOwnUser(userId);
+      allow list, create, update, delete: if false;
     }
   }
 }

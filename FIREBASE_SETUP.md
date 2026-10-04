@@ -1,8 +1,33 @@
-# Firebase account setup
+# Firebase account and data setup
 
-1. In Firebase Authentication, create three email/password users and set their display names to `Malith`, `Dananjaya`, and `Me (Admin)`. Their login emails and passwords are managed by Firebase Authentication, not by the app.
-2. Create a Firestore database for the same Firebase project, then deploy the rules from this repository with `firebase deploy --only firestore:rules --project YOUR_PROJECT_ID`.
-3. In Authentication, copy the administrator account's UID. In Firestore, create `userRoles/{ADMIN_UID}` with a string field `role` set to `admin`. Do not create role documents for Malith or Dananjaya; authenticated users without this role are regular users. The app cannot create or edit role documents.
-4. Configure the app's Firebase web settings in the local environment, then sign in with each account. New vehicle records are owned by the UID of the account that creates them. The administrator can read and manage all vehicle records; regular users can access only records with their own UID.
+1. Enable Email/Password sign-in in Firebase Authentication and create the accounts that need access. Firebase Authentication UIDs are the owners of all account data.
+2. Create a Firestore database for the same Firebase project and deploy this repository's rules:
 
-Existing records stored only in a browser's local storage are not automatically migrated because their owner cannot be verified. Export a backup from the old browser and import it while signed into the account that should own those records.
+   ```text
+   firebase deploy --only firestore:rules --project YOUR_PROJECT_ID
+   ```
+
+3. For the administrator account, create `userRoles/{AUTH_UID}` with the string field `role: "admin"`. Do not create a shared `admin` identity or let the client edit role documents. Regular users do not need a role document.
+4. Configure the Firebase web settings in the local environment and sign in. On first sign-in, the user must save a business name before the application opens.
+
+## Data ownership
+
+Each account's profile and data live under its Authentication UID:
+
+```text
+users/{AUTH_UID}
+users/{AUTH_UID}/bikes/{bikeId}
+users/{AUTH_UID}/settings/preferences
+users/{AUTH_UID}/products/{productId}
+users/{AUTH_UID}/sales/{saleId}
+users/{AUTH_UID}/customers/{customerId}
+users/{AUTH_UID}/expenses/{expenseId}
+```
+
+Firestore rules authorize profile and business-data access only when the path UID matches `request.auth.uid`. The admin role does not grant access to other users' business records.
+
+## Existing Firestore records
+
+On sign-in, the app copies legacy `bikes` documents whose `ownerUid` matches the signed-in UID into that account's `users/{AUTH_UID}/bikes` collection. It copies the matching `userSettings/{AUTH_UID}` document into `users/{AUTH_UID}/settings/preferences` if that new settings document does not already exist. Migration keeps legacy records in place and never overwrites records already in the user's new collection. Legacy reads are owner-only and legacy writes are disabled by the rules.
+
+Legacy records without a verifiable `ownerUid` are deliberately not assigned automatically; review and migrate those with a trusted administrative process. Browser-only backups can still be restored from the account's Settings screen while signed in as the intended owner.

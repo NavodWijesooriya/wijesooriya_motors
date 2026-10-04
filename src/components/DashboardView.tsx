@@ -25,7 +25,7 @@ import { MonthlySummarySection } from './MonthlySummarySection';
 import { useAuth } from '../../context/AuthContext';
 
 export const DashboardView: React.FC = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, profile } = useAuth();
   const { 
     bikes, 
     settings, 
@@ -80,6 +80,8 @@ export const DashboardView: React.FC = () => {
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2">
+            <p className="text-sm font-bold uppercase tracking-wider text-sky-300">Welcome to Sales POS</p>
+            <h2 className="text-2xl sm:text-3xl font-black text-white">{profile?.businessName || 'Loading...'}</h2>
             <div className="flex flex-wrap items-center gap-2">
               <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1.5 shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true"></span>
@@ -277,10 +279,10 @@ export const DashboardView: React.FC = () => {
         <section className="space-y-3" aria-labelledby="admin-user-summary-title">
           <div className="flex flex-wrap items-end justify-between gap-2">
             <div>
-              <h2 id="admin-user-summary-title" className="text-lg font-black text-white">All Users: Stock & Sales</h2>
-              <p className="text-xs text-slate-400">Per-user totals across all accounts, with dealership-wide totals below.</p>
+              <h2 id="admin-user-summary-title" className="text-lg font-black text-white">Inventory Owner: Stock & Sales</h2>
+              <p className="text-xs text-slate-400">Totals for records in this business account.</p>
             </div>
-            <span className="text-xs font-semibold text-sky-300">{userSummaries.length} users with records</span>
+            <span className="text-xs font-semibold text-sky-300">{userSummaries.length} record owners</span>
           </div>
           <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/80">
             <table className="w-full min-w-[760px] text-left text-xs">

@@ -1,5 +1,5 @@
 /**
- * Wijesooriya Motors - Robust Document Printing & Export Utility
+ * Sales POS - Document Printing & Export Utility
  * Handles printing across standard web, sandboxed iframes, and mobile devices.
  */
 
@@ -247,7 +247,7 @@ export const generatePrintableHtml = (contentHtml: string, title: string): strin
 <body>
   <div class="screen-notice">
     <div>
-      <div class="screen-notice-title">Official Document Ready • Wijesooriya Motors Dealership</div>
+      <div class="screen-notice-title">Official Document Ready • Sales POS</div>
       <div class="screen-notice-sub">Use the button on the right or press Ctrl+P (Cmd+P) to print or save as PDF.</div>
     </div>
     <button class="print-btn" onclick="window.focus(); window.print();">
@@ -293,10 +293,10 @@ export const printDocumentElement = (elementId: string, docTitle: string): boole
 
   try {
     // Look for existing print frame or create new
-    let printFrame = document.getElementById('wijesooriya-print-frame') as HTMLIFrameElement;
+    let printFrame = document.getElementById('sales-pos-print-frame') as HTMLIFrameElement;
     if (!printFrame) {
       printFrame = document.createElement('iframe');
-      printFrame.id = 'wijesooriya-print-frame';
+      printFrame.id = 'sales-pos-print-frame';
       printFrame.style.position = 'fixed';
       printFrame.style.top = '-9999px';
       printFrame.style.left = '-9999px';
@@ -431,7 +431,7 @@ export const buildModernBillPlainText = (
   }
 
   text += `\nTITLE & DELIVERY DECLARATION:\n`;
-  text += `Wijesooriya Motors hereby transfers legal ownership of the specified vehicle with clear title and zero undisclosed encumbrances. The Buyer acknowledges receipt in good working order.\n\n`;
+  text += `Sales POS hereby transfers legal ownership of the specified vehicle with clear title and zero undisclosed encumbrances. The Buyer acknowledges receipt in good working order.\n\n`;
 
   text += `SIGNATURES & OFFICIAL ENDORSEMENT:\n`;
   text += `Customer / Buyer: ________________________   Date: _____________\n`;

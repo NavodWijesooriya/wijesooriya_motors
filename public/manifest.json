@@ -1,7 +1,7 @@
 {
-  "name": "Wijesooriya Motors Dealership OS",
-  "short_name": "Wijesooriya",
-  "description": "Wijesooriya Motors - Motorbike Dealership Sales, Inventory & 3% Finance Commission Management",
+  "name": "Sales POS",
+  "short_name": "Sales POS",
+  "description": "Business sales, inventory, expenses, and reporting.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#090d16",

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useDealership } from '../context/DealershipContext';
 import { 
   Settings as SettingsIcon, 
@@ -38,6 +38,17 @@ export const SettingsView: React.FC = () => {
   const [taxNumber, setTaxNumber] = useState(settings.taxNumber || '');
   const [currencySymbol, setCurrencySymbol] = useState(settings.currencySymbol);
   const [theme, setTheme] = useState<'dark' | 'light'>(settings.theme);
+
+  useEffect(() => {
+    setDealershipName(settings.dealershipName);
+    setTagline(settings.tagline);
+    setAddress(settings.address);
+    setPhone(settings.phone);
+    setEmail(settings.email);
+    setTaxNumber(settings.taxNumber || '');
+    setCurrencySymbol(settings.currencySymbol);
+    setTheme(settings.theme);
+  }, [settings]);
 
   // Confirmation Modal for Clear All Data
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -85,10 +96,10 @@ export const SettingsView: React.FC = () => {
       <div>
         <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
           <SettingsIcon className="w-7 h-7 text-sky-400" />
-          Dealership Profile & <span className="text-sky-400">Settings</span>
+          Business Profile & <span className="text-sky-400">Settings</span>
         </h1>
         <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Customize dealership branding, currency options, and database backups.
+          Customize your business profile, currency options, and database backups.
         </p>
       </div>
 
@@ -131,7 +142,7 @@ export const SettingsView: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="dealership-name" className="block text-xs font-semibold text-slate-300 mb-1">
-                Dealership Commercial Name *
+                Business Name *
               </label>
               <input
                 id="dealership-name"
@@ -300,7 +311,7 @@ export const SettingsView: React.FC = () => {
           Database & PWA Local Storage Management
         </h2>
         <p className="text-xs text-slate-400">
-          Your inventory and sales data for Wijesooriya Motors are preserved in local storage with PWA offline resilience. You can export complete JSON backups or restore previous data anytime.
+          Your business inventory and sales data are synchronized securely with your account. You can export complete JSON backups or restore previous data anytime.
         </p>
 
         <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 pt-2">

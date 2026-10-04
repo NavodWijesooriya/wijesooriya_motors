@@ -17,13 +17,10 @@ export const LoadingScreen: React.FC = () => {
               </div>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center justify-center gap-1.5">
-              <span>WIJESOORIYA</span>
-              <span className="text-sky-400">MOTORS</span>
-            </h1>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">Sales POS</h1>
 
             <p className="text-xs text-slate-400 font-medium mt-2 tracking-[0.18em] uppercase">
-              Dealership Operating System
+              Business Sales Management
             </p>
           </div>
 
@@ -32,8 +29,8 @@ export const LoadingScreen: React.FC = () => {
               <LoaderCircle className="h-8 w-8 text-sky-400 animate-spin" />
             </div>
 
-            <p className="mt-6 text-lg font-semibold text-white">Loading dealership dashboard...</p>
-            <p className="mt-2 text-sm text-slate-400">Syncing account access and live inventory data</p>
+            <p className="mt-6 text-lg font-semibold text-white">Loading...</p>
+            <p className="mt-2 text-sm text-slate-400">Syncing account profile and business data</p>
 
             <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-300">
               <ShieldCheck className="h-3.5 w-3.5" />

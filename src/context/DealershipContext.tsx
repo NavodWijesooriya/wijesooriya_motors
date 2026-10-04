@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
-import { collection, deleteDoc, deleteField, doc, onSnapshot, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
+import React, { createContext, useContext, useState, useEffect, useMemo, useRef, ReactNode } from 'react';
+import { collection, deleteDoc, deleteField, doc, getDoc, getDocs, onSnapshot, query, serverTimestamp, setDoc, where, writeBatch } from 'firebase/firestore';
 import { 
   Bike, 
   DealershipSettings, 
@@ -30,6 +30,7 @@ interface DealershipContextType {
   bikes: Bike[];
   settings: DealershipSettings;
   summary: FinancialSummary;
+  isBusinessDataLoading: boolean;
   activeTab: 'dashboard' | 'inventory' | 'sales' | 'summary' | 'calculator' | 'settings';
   setActiveTab: (tab: 'dashboard' | 'inventory' | 'sales' | 'summary' | 'calculator' | 'settings') => void;
   
@@ -58,7 +59,7 @@ interface DealershipContextType {
   revertSale: (bikeId: string) => void;
   addRepairItem: (bikeId: string, item: Omit<OtherCostItem, 'id'>) => void;
   removeRepairItem: (bikeId: string, repairId: string) => void;
-  updateSettings: (updates: Partial<DealershipSettings>) => void;
+  updateSettings: (updates: Partial<DealershipSettings>) => Promise<void>;
   resetToDefaultData: () => void;
   clearAllData: () => void;
   exportDataToJson: () => void;
@@ -82,7 +83,9 @@ interface DealershipContextType {
 const DealershipContext = createContext<DealershipContextType | undefined>(undefined);
 
 export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { user, isAdmin } = useAuth();
+  const { user, profile, isAdmin, saveBusinessName } = useAuth();
+  const businessNameRef = useRef(profile?.businessName || '');
+  businessNameRef.current = profile?.businessName || '';
   const currentUser: AuthUser | null = user ? {
     username: user.email || user.uid,
     displayName: user.displayName || user.email?.split('@')[0] || user.uid,
@@ -93,6 +96,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const [bikes, setBikes] = useState<Bike[]>([]);
   const [settings, setSettings] = useState<DealershipSettings>(initialDealershipSettings);
+  const [isBusinessDataLoading, setIsBusinessDataLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'inventory' | 'sales' | 'summary' | 'calculator' | 'settings'>('dashboard');
   
@@ -123,48 +127,124 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
 
   useEffect(() => {
     setBikes([]);
-    setSettings(initialDealershipSettings);
+    setSettings({ ...initialDealershipSettings, dealershipName: profile?.businessName || '' });
     setSelectedBike(null);
     setSelectedSaleRecord(null);
-    if (!user) return;
+    setIsAddBikeModalOpen(false);
+    setIsEditBikeModalOpen(false);
+    setIsSaleModalOpen(false);
+    setIsDetailModalOpen(false);
+    setIsInvoiceModalOpen(false);
+    setActiveTab('dashboard');
+    setToasts([]);
+    if (!user || !profile?.businessName.trim()) return;
 
-    const bikesCollection = collection(db, 'bikes');
-    const bikesQuery = isAdmin
-      ? bikesCollection
-      : query(bikesCollection, where('ownerUid', '==', user.uid));
+    setIsBusinessDataLoading(true);
+    let bikesLoaded = false;
+    let settingsLoaded = false;
+    let migrationLoaded = false;
+    const finishLoading = () => {
+      if (bikesLoaded && settingsLoaded && migrationLoaded) setIsBusinessDataLoading(false);
+    };
+    const bikesCollection = collection(db, 'users', user.uid, 'bikes');
     const unsubscribeBikes = onSnapshot(
-      bikesQuery,
-      (snapshot) => setBikes(snapshot.docs.map((bikeDoc) => {
-        const data = bikeDoc.data();
-        const toIsoString = (value: any) => value?.toDate ? value.toDate().toISOString() : value || '';
-        return {
-          ...data,
-          id: bikeDoc.id,
-          vehicleType: data.vehicleType === 'Car' ? 'Light Vehicle' : data.vehicleType || 'Bike',
-          category: data.category === 'Auto' ? 'Auto' : 'Manual',
-          condition: data.condition === 'Brand New' ? 'Brand New' : 'Used',
-          createdAt: toIsoString(data.createdAt),
-          updatedAt: toIsoString(data.updatedAt)
-        } as Bike;
-      })),
+      bikesCollection,
+      (snapshot) => {
+        setBikes(snapshot.docs.map((bikeDoc) => {
+          const data = bikeDoc.data();
+          const toIsoString = (value: any) => value?.toDate ? value.toDate().toISOString() : value || '';
+          return {
+            ...data,
+            id: bikeDoc.id,
+            vehicleType: data.vehicleType === 'Car' ? 'Light Vehicle' : data.vehicleType || 'Bike',
+            category: data.category === 'Auto' ? 'Auto' : 'Manual',
+            condition: data.condition === 'Brand New' ? 'Brand New' : 'Used',
+            createdAt: toIsoString(data.createdAt),
+            updatedAt: toIsoString(data.updatedAt)
+          } as Bike;
+        }));
+        bikesLoaded = true;
+        finishLoading();
+      },
       (error) => {
         console.error('Failed to load dealership records', error);
         showToast('Data Could Not Load', 'Check your connection and Firebase security rules.', 'error');
+        bikesLoaded = true;
+        finishLoading();
       }
     );
     const unsubscribeSettings = onSnapshot(
-      doc(db, 'userSettings', user.uid),
-      (snapshot) => setSettings(snapshot.exists()
-        ? { ...initialDealershipSettings, ...snapshot.data() } as DealershipSettings
-        : initialDealershipSettings),
-      (error) => console.error('Failed to load dealership settings', error)
+      doc(db, 'users', user.uid, 'settings', 'preferences'),
+      (snapshot) => {
+        setSettings(snapshot.exists()
+          ? { ...initialDealershipSettings, ...snapshot.data(), dealershipName: businessNameRef.current } as DealershipSettings
+          : { ...initialDealershipSettings, dealershipName: businessNameRef.current });
+        settingsLoaded = true;
+        finishLoading();
+      },
+      (error) => {
+        console.error('Failed to load dealership settings', error);
+        showToast('Settings Could Not Load', 'Check your connection and Firestore security rules.', 'error');
+        settingsLoaded = true;
+        finishLoading();
+      }
     );
+    void (async () => {
+      try {
+        const migrationRef = doc(db, 'users', user.uid, 'migration', 'legacy-v1');
+        if ((await getDoc(migrationRef)).exists()) return;
+
+        const legacyBikes = await getDocs(query(
+          collection(db, 'bikes'),
+          where('ownerUid', '==', user.uid)
+        ));
+        const existingBikes = await getDocs(bikesCollection);
+        const existingIds = new Set(existingBikes.docs.map((bikeDoc) => bikeDoc.id));
+        const recordsToMigrate = legacyBikes.docs.filter((bikeDoc) => !existingIds.has(bikeDoc.id));
+
+        for (let offset = 0; offset < recordsToMigrate.length; offset += 450) {
+          const batch = writeBatch(db);
+          recordsToMigrate.slice(offset, offset + 450).forEach((bikeDoc) => {
+            batch.set(doc(db, 'users', user.uid, 'bikes', bikeDoc.id), {
+              ...bikeDoc.data(),
+              id: bikeDoc.id,
+              ownerUid: user.uid
+            });
+          });
+          await batch.commit();
+        }
+
+        const legacySettings = await getDoc(doc(db, 'userSettings', user.uid));
+        const userSettingsRef = doc(db, 'users', user.uid, 'settings', 'preferences');
+        const existingSettings = await getDoc(userSettingsRef);
+        if (legacySettings.exists() && !existingSettings.exists()) {
+          await setDoc(userSettingsRef, {
+            ...legacySettings.data(),
+            dealershipName: profile.businessName
+          });
+        }
+
+        await setDoc(migrationRef, { completedAt: serverTimestamp() });
+      } catch (error) {
+        console.error('Failed to migrate legacy dealership records', error);
+        showToast('Migration Incomplete', 'Some older records could not be copied. Existing records were not deleted.', 'error');
+      } finally {
+        migrationLoaded = true;
+        finishLoading();
+      }
+    })();
 
     return () => {
       unsubscribeBikes();
       unsubscribeSettings();
     };
-  }, [user?.uid, isAdmin]);
+  }, [user?.uid, Boolean(profile?.businessName.trim())]);
+
+  useEffect(() => {
+    if (profile?.businessName) {
+      setSettings((currentSettings) => ({ ...currentSettings, dealershipName: profile.businessName }));
+    }
+  }, [profile?.businessName]);
 
   // Network & PWA listeners
   useEffect(() => {
@@ -216,7 +296,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       updatedByEmail: user.email || ''
     };
     const write = isNew
-      ? setDoc(doc(db, 'bikes', bike.id), {
+      ? setDoc(doc(db, 'users', user.uid, 'bikes', bike.id), {
           ...ownedBike,
           createdBy: user.uid,
           createdByName: user.displayName || user.email?.split('@')[0] || user.uid,
@@ -227,7 +307,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
         })
       : (() => {
           const { createdAt, createdBy, createdByName, createdByEmail, ...recordUpdates } = ownedBike;
-          return setDoc(doc(db, 'bikes', bike.id), {
+        return setDoc(doc(db, 'users', user.uid, 'bikes', bike.id), {
             ...recordUpdates,
             sale: bike.sale ?? deleteField(),
             updatedAt: serverTimestamp(),
@@ -242,7 +322,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const persistSettings = (nextSettings: DealershipSettings) => {
     if (!user) return;
-    void setDoc(doc(db, 'userSettings', user.uid), nextSettings).catch((error) => {
+    void setDoc(doc(db, 'users', user.uid, 'settings', 'preferences'), nextSettings).catch((error) => {
       console.error('Failed to save dealership settings', error);
       showToast('Settings Save Failed', 'Your settings could not be saved to the database.', 'error');
     });
@@ -250,25 +330,31 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const replaceVisibleBikes = (nextBikes: Bike[]) => {
     if (!user) return;
-    const userBikes = bikes.filter((bike) => bike.ownerUid === user.uid);
+    const userBikes = bikes;
     const ownedNextBikes = nextBikes.map((bike) => ({ ...bike, ownerUid: user.uid }));
     const retainedIds = new Set(ownedNextBikes.map((bike) => bike.id));
     for (const bike of userBikes) {
       if (!retainedIds.has(bike.id)) {
-        void deleteDoc(doc(db, 'bikes', bike.id)).catch((error) => {
+        void deleteDoc(doc(db, 'users', user.uid, 'bikes', bike.id)).catch((error) => {
           console.error('Failed to remove dealership record', error);
           showToast('Delete Failed', 'A record could not be removed from the database.', 'error');
         });
       }
     }
-    setBikes((currentBikes) => isAdmin
-      ? [...ownedNextBikes, ...currentBikes.filter((bike) => bike.ownerUid !== user.uid)]
-      : ownedNextBikes);
+    setBikes(ownedNextBikes);
     ownedNextBikes.forEach((bike) => persistBike(bike, true));
   };
 
   const logout = () => {
-    void signOut(auth).catch((error) => console.error('Failed to sign out of Firebase', error));
+    setBikes([]);
+    setSettings(initialDealershipSettings);
+    setSelectedBike(null);
+    setSelectedSaleRecord(null);
+    setToasts([]);
+    void signOut(auth).catch((error) => {
+      console.error('Failed to sign out of Firebase', error);
+      showToast('Sign Out Failed', 'Your Firebase session could not be closed.', 'error');
+    });
     showToast('Logged Out', 'You have been safely logged out.', 'info');
   };
 
@@ -280,7 +366,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
-      showToast('App Installed', 'Wijesooriya Motors has been added to your home screen!', 'success');
+      showToast('App Installed', 'Sales POS has been added to your home screen!', 'success');
     }
     setDeferredPrompt(null);
     setIsPWAInstallable(false);
@@ -289,7 +375,8 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
   const summary = useMemo(() => calculateFinancialSummary(bikes), [bikes]);
 
   const addBike = (data: Partial<Bike>): Bike => {
-    const newId = doc(collection(db, 'bikes')).id;
+    if (!user) throw new Error('You must be signed in to add a vehicle.');
+    const newId = doc(collection(db, 'users', user.uid, 'bikes')).id;
     const otherCosts: OtherCostItem[] = data.repairCosts || [];
     const totalOtherCosts = calculateTotalOtherCosts(otherCosts);
     const costPrice = Number(data.purchasePrice) || 0;
@@ -331,7 +418,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     persistBike(newBike, true);
     showToast(
       'Motorbike Saved',
-      `${newBike.year} ${newBike.make} ${newBike.model} added to Wijesooriya Motors. Cost: ${formatCurrency(costPrice, settings.currencySymbol)} | Est. Profit: +${formatCurrency(estimatedProfit, settings.currencySymbol)}`,
+      `${newBike.year} ${newBike.make} ${newBike.model} added to ${profile?.businessName || 'your business'}. Cost: ${formatCurrency(costPrice, settings.currencySymbol)} | Est. Profit: +${formatCurrency(estimatedProfit, settings.currencySymbol)}`,
       'success'
     );
     return newBike;
@@ -379,8 +466,9 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const deleteBike = async (id: string) => {
     const bikeToDelete = bikes.find((b) => b.id === id);
+    if (!user) return;
     try {
-      await deleteDoc(doc(db, 'bikes', id));
+      await deleteDoc(doc(db, 'users', user.uid, 'bikes', id));
     } catch (error) {
       console.error('Failed to delete dealership record', error);
       showToast('Delete Failed', 'The record could not be removed from the database.', 'error');
@@ -437,9 +525,10 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const addRepairItem = (bikeId: string, item: Omit<OtherCostItem, 'id'>) => {
+    if (!user) return;
     const newOtherCost: OtherCostItem = {
       ...item,
-      id: doc(collection(db, 'bikes')).id
+      id: doc(collection(db, 'users', user.uid, 'bikes')).id
     };
     const bike = bikes.find((item) => item.id === bikeId);
     if (!bike) return;
@@ -474,15 +563,25 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     showToast('Expense Removed', 'Total cost and profit margin adjusted.', 'info');
   };
 
-  const updateSettings = (updates: Partial<DealershipSettings>) => {
+  const updateSettings = async (updates: Partial<DealershipSettings>) => {
     const nextSettings = { ...settings, ...updates };
+    if (updates.dealershipName?.trim() && updates.dealershipName.trim() !== profile?.businessName) {
+      try {
+        await saveBusinessName(updates.dealershipName);
+      } catch (error) {
+        console.error('Failed to update business name', error);
+        showToast('Business Name Save Failed', 'Your Business Name could not be updated.', 'error');
+        return;
+      }
+    }
     setSettings(nextSettings);
     persistSettings(nextSettings);
-    showToast('Settings Saved', 'Wijesooriya Motors configuration updated.', 'success');
+    showToast('Settings Saved', 'Business configuration updated.', 'success');
   };
 
   const resetToDefaultData = () => {
-    const newIds = new Map(sampleBikes.map((bike) => [bike.id, doc(collection(db, 'bikes')).id]));
+    if (!user) return;
+    const newIds = new Map(sampleBikes.map((bike) => [bike.id, doc(collection(db, 'users', user.uid, 'bikes')).id]));
     const resetBikes = sampleBikes.map((bike) => ({
       ...bike,
       id: newIds.get(bike.id)!,
@@ -490,8 +589,9 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       sale: bike.sale ? { ...bike.sale, bikeId: newIds.get(bike.id)! } : undefined
     }));
     replaceVisibleBikes(resetBikes);
-    setSettings(initialDealershipSettings);
-    persistSettings(initialDealershipSettings);
+    const resetSettings = { ...initialDealershipSettings, dealershipName: profile?.businessName || '' };
+    setSettings(resetSettings);
+    persistSettings(resetSettings);
     showToast('Reset Complete', 'Loaded realistic dealership sales records (Cars & Bikes).', 'info');
   };
 
@@ -503,7 +603,8 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
   const exportDataToJson = () => {
     const backup = {
       version: '3.0',
-      dealership: 'Wijesooriya Motors',
+      application: 'Sales POS',
+      businessName: profile?.businessName || '',
       currency: 'LKR',
       exportedAt: new Date().toISOString(),
       settings,
@@ -513,19 +614,20 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Wijesooriya-Motors-LKR-Backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `Sales-POS-LKR-Backup-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showToast('Database Exported', 'Downloaded complete Wijesooriya Motors JSON backup.', 'success');
+    showToast('Database Exported', 'Downloaded complete Sales POS JSON backup.', 'success');
   };
 
   const importDataFromJson = (jsonStr: string): boolean => {
     try {
       const data = JSON.parse(jsonStr);
       if (Array.isArray(data.bikes)) {
-        const importedIds = new Map(data.bikes.map((bike: Bike) => [bike.id, doc(collection(db, 'bikes')).id]));
+        if (!user) throw new Error('You must be signed in to import business records.');
+        const importedIds = new Map(data.bikes.map((bike: Bike) => [bike.id, doc(collection(db, 'users', user.uid, 'bikes')).id]));
         const importedBikes = data.bikes.map((bike: Bike) => ({
           ...bike,
           id: importedIds.get(bike.id)!,
@@ -579,6 +681,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
         bikes,
         settings,
         summary,
+        isBusinessDataLoading,
         activeTab,
         setActiveTab,
         selectedBike,

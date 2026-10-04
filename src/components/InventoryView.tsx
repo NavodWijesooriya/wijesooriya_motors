@@ -134,7 +134,7 @@ export const InventoryView: React.FC = () => {
             </span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            {isAdmin ? 'All vehicle records across users, including their ownership and audit history.' : 'Active showroom stock available for sale. Sold vehicles are recorded in Sales & Commissions.'}
+            {isAdmin ? 'All vehicle records for this business, including ownership and audit history.' : 'Active showroom stock available for sale. Sold vehicles are recorded in Sales & Commissions.'}
           </p>
         </div>
 
@@ -229,7 +229,7 @@ export const InventoryView: React.FC = () => {
               aria-label="Filter records by user"
               className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3 py-2.5 min-h-[44px] text-xs text-white outline-none"
             >
-              <option value="All">All Users</option>
+              <option value="All">All Creators</option>
               {ownerOptions.map((owner) => <option key={owner.uid} value={owner.uid}>{owner.label}</option>)}
             </select>
             <select

@@ -1,6 +1,6 @@
 {
-  "name": "Wijesooriya Motors - Motorbike Sales Management System",
-  "description": "Wijesooriya Motors - Modern Motorbike Sales Management System with Sri Lankan Rupees (LKR) pricing, cost price tracking, itemized other expenses, automatic profit calculations, 3% finance commission engine, and secure staff authentication.",
+  "name": "Sales POS",
+  "description": "Business sales, inventory, expenses, and reporting with secure account access.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -17,7 +17,7 @@ export const PWAInstallBanner: React.FC = () => {
           </div>
           <div className="text-xs sm:text-sm">
             <span className="font-bold text-white flex items-center gap-1.5">
-              Install Wijesooriya Motors App
+              Install Sales POS
               <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-semibold border border-amber-500/30">
                 PWA Enabled
               </span>

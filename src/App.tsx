@@ -20,11 +20,13 @@ import { SaleModal } from './components/SaleModal';
 import { BikeDetailModal } from './components/BikeDetailModal';
 import { InvoiceModal } from './components/InvoiceModal';
 import { LoginScreen } from './components/LoginScreen';
+import { BusinessNameSetup } from './components/BusinessNameSetup';
+import { LoadingScreen } from './components/LoadingScreen';
 import { Bike as BikeIcon } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
-  const { activeTab, settings, summary } = useDealership();
-  const { user } = useAuth();
+  const { activeTab, summary, logout, isBusinessDataLoading } = useDealership();
+  const { user, profile, authError } = useAuth();
 
   if (!user) {
     return (
@@ -34,6 +36,28 @@ const MainLayout: React.FC = () => {
       </>
     );
   }
+
+  if (authError) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-950 p-6 text-center text-slate-100">
+        <h1 className="text-2xl font-black">Sales POS</h1>
+        <p role="alert" className="max-w-lg text-sm text-rose-300">{authError}</p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="rounded-xl bg-sky-500 px-5 py-3 font-bold text-slate-950"
+        >
+          Retry
+        </button>
+        <button type="button" onClick={logout} className="text-sm font-semibold text-slate-400 hover:text-white">
+          Sign out
+        </button>
+      </main>
+    );
+  }
+
+  if (!profile?.businessName.trim()) return <BusinessNameSetup />;
+  if (isBusinessDataLoading) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-sky-500 selection:text-slate-950 transition-colors print:bg-white print:text-black print:min-h-0">
@@ -84,10 +108,10 @@ const MainLayout: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="font-black text-slate-300 flex items-center gap-1">
               <BikeIcon className="w-4 h-4 text-sky-400" />
-              WIJESOORIYA<span className="text-sky-400">MOTORS</span>
+              Sales POS
             </span>
             <span>•</span>
-            <span>{settings.dealershipName} Dealership Management Operating System</span>
+            <span>{profile.businessName} Business Management</span>
           </div>
 
           <div className="flex items-center gap-4 text-slate-400">

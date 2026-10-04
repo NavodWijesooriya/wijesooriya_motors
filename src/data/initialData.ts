@@ -1,12 +1,12 @@
 import { Bike, DealershipSettings } from '../types';
 
 export const initialDealershipSettings: DealershipSettings = {
-  dealershipName: 'Wijesooriya Motors',
-  tagline: 'Premier Motorbike Dealership & Sales Management System',
-  address: 'Mathammana, Minuwangoda, Sri Lanka',
-  phone: '+94 77 123 4567',
-  email: 'sales@wijesooriyamotors.lk',
-  taxNumber: 'LK-VAT-902148',
+  dealershipName: '',
+  tagline: 'Business Sales & Inventory Management',
+  address: '',
+  phone: '',
+  email: '',
+  taxNumber: '',
   currencySymbol: 'Rs.',
   currencyCode: 'LKR',
   defaultFinanceCommissionRate: 0.03, // 3%

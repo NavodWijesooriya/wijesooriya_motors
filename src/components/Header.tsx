@@ -19,9 +19,8 @@ import {
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { 
-    settings, 
     activeTab, 
     setActiveTab, 
     setIsAddBikeModalOpen, 
@@ -53,7 +52,7 @@ export const Header: React.FC = () => {
             type="button"
             className="flex items-center gap-2.5 sm:gap-3 cursor-pointer shrink-0 text-left focus-visible:ring-2 focus-visible:ring-sky-400 rounded-xl p-1"
             onClick={() => setActiveTab('dashboard')}
-            aria-label="Wijesooriya Motors Dashboard Home"
+            aria-label="Sales POS Dashboard Home"
           >
             <div className="relative flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-sky-600 via-cyan-500 to-amber-400 p-[2px] shadow-lg shadow-sky-500/20 shrink-0">
               <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
@@ -68,14 +67,14 @@ export const Header: React.FC = () => {
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="font-black text-base sm:text-xl tracking-tight text-white flex items-center truncate">
-                  WIJESOORIYA<span className="text-sky-400 ml-1">MOTORS</span>
+                  Sales POS
                 </span>
                 <span className="hidden lg:inline-flex items-center text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">
                   Dealership OS
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 hidden sm:block truncate max-w-[200px] md:max-w-none">
-                {settings.dealershipName} • Mathammana, Minuwangoda
+              <p className="text-[10px] sm:text-[11px] text-slate-400 truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
+                {profile?.businessName || 'Loading...'}
               </p>
             </div>
           </button>
@@ -116,7 +115,7 @@ export const Header: React.FC = () => {
               <button
                 onClick={installPWA}
                 className="hidden sm:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 text-xs font-bold transition-all shadow-sm"
-                title="Install Wijesooriya Motors App to Home Screen"
+                title="Install Sales POS to Home Screen"
                 aria-label="Install app to home screen"
               >
                 <Download className="w-4 h-4 text-amber-400" aria-hidden="true" />

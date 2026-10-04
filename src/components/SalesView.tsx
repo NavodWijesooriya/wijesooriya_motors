@@ -144,7 +144,7 @@ export const SalesView: React.FC = () => {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Wijesooriya-Motors-LKR-Sales-Ledger-${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Sales-POS-LKR-Sales-Ledger-${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -281,7 +281,7 @@ export const SalesView: React.FC = () => {
             aria-label="Filter sales by user"
             className="w-full md:w-64 bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 rounded-xl px-3.5 py-2.5 min-h-[44px] text-xs sm:text-sm text-slate-200 outline-none"
           >
-            <option value="All">All Users</option>
+            <option value="All">All Creators</option>
             {ownerOptions.map((owner) => <option key={owner.uid} value={owner.uid}>{owner.label}</option>)}
           </select>
         )}

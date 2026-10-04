@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useDealership } from '../context/DealershipContext';
 import { auth } from '../../lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { 
@@ -13,8 +12,6 @@ import {
 } from 'lucide-react';
 
 export const LoginScreen: React.FC = () => {
-  const { settings } = useDealership();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -54,10 +51,7 @@ export const LoginScreen: React.FC = () => {
             </div>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center justify-center gap-1.5">
-            <span>WIJESOORIYA</span>
-            <span className="text-sky-400">MOTORS</span>
-          </h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Sales POS</h1>
 
           <p className="text-xs text-slate-400 font-medium mt-1">
             Motorbike Dealership & Sales Management System
@@ -158,7 +152,7 @@ export const LoginScreen: React.FC = () => {
       </div>
 
       <div className="mt-8 text-center text-xs text-slate-600">
-        © {new Date().getFullYear()} {settings.dealershipName} • All rights reserved
+        © {new Date().getFullYear()} Sales POS • All rights reserved
       </div>
     </div>
   );
