@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FirebaseError } from 'firebase/app';
 import { AlertCircle, Building2, Save } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -16,7 +17,15 @@ export const BusinessNameSetup: React.FC = () => {
       await saveBusinessName(businessName);
     } catch (error) {
       console.error('Failed to save business profile', error);
-      setErrorMessage('Your Business Name could not be saved. Please check your connection and try again.');
+      if (error instanceof FirebaseError && error.code === 'permission-denied') {
+        setErrorMessage('Firestore denied the update. Confirm this account is approved and publish the repository Firestore rules to the Firebase project used by the app.');
+      } else if (error instanceof FirebaseError && error.code === 'unavailable') {
+        setErrorMessage('Firestore is unavailable. Check your internet connection and try again.');
+      } else {
+        setErrorMessage(error instanceof Error
+          ? `Your Business Name could not be saved: ${error.message}`
+          : 'Your Business Name could not be saved. Please try again.');
+      }
     } finally {
       setIsSaving(false);
     }

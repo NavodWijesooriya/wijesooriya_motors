@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDealership } from '../context/DealershipContext';
+import { useAuth } from '../../context/AuthContext';
+import { ApprovalRequests } from './ApprovalRequests';
 import { 
   Settings as SettingsIcon, 
   Building, 
@@ -16,6 +18,7 @@ import {
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
+  const { isAdmin } = useAuth();
   const { 
     settings, 
     updateSettings, 
@@ -102,6 +105,8 @@ export const SettingsView: React.FC = () => {
           Customize your business profile, currency options, and database backups.
         </p>
       </div>
+
+      {isAdmin && <ApprovalRequests />}
 
       {/* Section 1: Firebase Account */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-5 shadow-xl">

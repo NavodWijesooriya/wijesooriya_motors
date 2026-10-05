@@ -1,14 +1,17 @@
-# Firebase account and data setup
+# Firebase account approval and data setup
 
-1. Enable Email/Password sign-in in Firebase Authentication and create the accounts that need access. Firebase Authentication UIDs are the owners of all account data.
-2. Create a Firestore database for the same Firebase project and deploy this repository's rules:
+1. Enable Email/Password sign-in in Firebase Authentication and create a web app in the same Firebase project as Firestore.
+2. Configure the six `VITE_FIREBASE_*` values from the Firebase web app configuration in your local `.env` file and in **Vercel → Project Settings → Environment Variables** for every deployment environment. These are public browser configuration values; Firestore security rules, not secret client keys, protect account data. Redeploy after changing Vercel environment variables because Vite embeds them at build time.
+3. Create a Firestore database for the same Firebase project and deploy this repository's rules:
 
    ```text
    firebase deploy --only firestore:rules --project YOUR_PROJECT_ID
    ```
 
-3. For the administrator account, create `userRoles/{AUTH_UID}` with the string field `role: "admin"`. Do not create a shared `admin` identity or let the client edit role documents. Regular users do not need a role document.
-4. Configure the Firebase web settings in the local environment and sign in. On first sign-in, the user must save a business name before the application opens.
+4. Register the first administrator through the website. In Firebase Console, find that account's Authentication UID and its `users/{AUTH_UID}` registration document; set `approvalStatus` to `approved`, then create `userRoles/{AUTH_UID}` with the string field `role: "admin"`. Do not create a shared `admin` identity or let the client edit role documents. The administrator can then approve or reject future requests under **Settings → Registration Requests**. Regular users do not need a role document.
+5. Users register with an email address and password. Their Firestore profile is created with `approvalStatus: "pending"`; only an administrator can change it to `approved` or `rejected`. Approved users must save a business name before the application opens.
+
+The registration request is stored at `users/{AUTH_UID}` with `email`, `approvalStatus`, `submittedAt`, `createdAt`, and `updatedAt`. Approval and rejection decisions record `reviewedBy` and `reviewedAt`. Rejected and pending profiles cannot read or write the private dealership data collections, even if the Firebase Authentication account still exists.
 
 ## Data ownership
 
@@ -25,6 +28,7 @@ users/{AUTH_UID}/expenses/{expenseId}
 ```
 
 Firestore rules authorize profile and business-data access only when the path UID matches `request.auth.uid`. The admin role does not grant access to other users' business records.
+Only admins can list user profiles, which lets the Settings approval queue show pending requests. Each request can be reviewed only once; decisions cannot be changed by the applicant or overwritten from the client.
 
 ## Existing Firestore records
 

@@ -1,15 +1,24 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import { onAuthStateChanged, type User } from 'firebase/auth';
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  type User
+} from 'firebase/auth';
 import { doc, getDoc, onSnapshot, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { LoadingScreen } from '../src/components/LoadingScreen';
+
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'unregistered';
 
 export interface UserProfile {
   businessName: string;
   email?: string;
   role: 'admin' | 'user';
+  approvalStatus: ApprovalStatus;
   createdAt?: unknown;
   updatedAt?: unknown;
 }
@@ -18,8 +27,14 @@ interface AuthContextValue {
   user: User | null;
   profile: UserProfile | null;
   isAdmin: boolean;
+  approvalStatus: ApprovalStatus;
   loading: boolean;
   authError: string | null;
+  authNotice: string | null;
+  signIn: (email: string, password: string) => Promise<void>;
+  registerAccount: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  clearAuthNotice: () => void;
   saveBusinessName: (businessName: string) => Promise<void>;
 }
 
@@ -27,8 +42,20 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   profile: null,
   isAdmin: false,
+  approvalStatus: 'unregistered',
   loading: true,
   authError: null,
+  authNotice: null,
+  signIn: async () => {
+    throw new Error('Authentication is required to sign in.');
+  },
+  registerAccount: async () => {
+    throw new Error('Authentication is required to register.');
+  },
+  logout: async () => {
+    throw new Error('Authentication is not initialized.');
+  },
+  clearAuthNotice: () => undefined,
   saveBusinessName: async () => {
     throw new Error('Authentication is required to save a business name.');
   }
@@ -38,12 +65,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [approvalStatus, setApprovalStatus] = useState<ApprovalStatus>('unregistered');
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [authNotice, setAuthNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let unsubscribeProfile: (() => void) | undefined;
     let unsubscribeRole: (() => void) | undefined;
+    let accessRevocationRequested = false;
 
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) setLoading(true);
@@ -51,9 +81,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       unsubscribeRole?.();
       unsubscribeProfile = undefined;
       unsubscribeRole = undefined;
+      accessRevocationRequested = false;
       setUser(currentUser);
       setProfile(null);
       setIsAdmin(false);
+      setApprovalStatus('unregistered');
       setAuthError(null);
 
       if (!currentUser) {
@@ -70,18 +102,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       unsubscribeProfile = onSnapshot(
         doc(db, 'users', currentUser.uid),
         (profileSnapshot) => {
-          const data = profileSnapshot.data();
-          setProfile(profileSnapshot.exists() && typeof data?.businessName === 'string'
+          const data = profileSnapshot.data() || {};
+          const status: ApprovalStatus = !profileSnapshot.exists()
+            ? 'unregistered'
+            : data?.approvalStatus === 'pending' || data?.approvalStatus === 'rejected'
+              ? data.approvalStatus
+              : 'approved';
+
+          setApprovalStatus(status);
+          setProfile(profileSnapshot.exists()
             ? {
-                businessName: data.businessName,
+                businessName: typeof data.businessName === 'string' ? data.businessName : '',
                 email: typeof data.email === 'string' ? data.email : undefined,
                 role: data.role === 'admin' ? 'admin' : 'user',
+                approvalStatus: status,
                 createdAt: data.createdAt,
                 updatedAt: data.updatedAt
               }
             : null);
           profileLoaded = true;
           finishLoading();
+
+          if ((status === 'pending' || status === 'rejected') && !accessRevocationRequested) {
+            accessRevocationRequested = true;
+            setAuthNotice(status === 'pending'
+              ? 'Your registration is pending administrator approval.'
+              : 'Your registration request was not approved. You cannot access the system.');
+            void signOut(auth).catch((error) => {
+              console.error('Failed to sign out an unapproved account', error);
+              setAuthError('Your account is not approved and could not be signed out. Please close this page and contact an administrator.');
+            });
+          }
         },
         (error) => {
           console.error('Failed to load business profile', error);
@@ -118,6 +169,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  const signIn = useCallback(async (email: string, password: string) => {
+    setAuthNotice(null);
+    await signInWithEmailAndPassword(auth, email.trim(), password);
+  }, []);
+
+  const registerAccount = useCallback(async (email: string, password: string) => {
+    setAuthNotice(null);
+    const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+    const timestamp = serverTimestamp();
+
+    try {
+      await setDoc(doc(db, 'users', credential.user.uid), {
+        businessName: '',
+        email: credential.user.email,
+        role: 'user',
+        approvalStatus: 'pending',
+        submittedAt: timestamp,
+        createdAt: timestamp,
+        updatedAt: timestamp
+      });
+    } catch (error) {
+      console.error('Failed to save registration request', error);
+      try {
+        await signOut(auth);
+      } catch (signOutError) {
+        console.error('Failed to sign out after registration could not be saved', signOutError);
+        setAuthError('Your registration request could not be saved, and this account could not be signed out. Contact an administrator.');
+      }
+      throw new Error('Your account was created, but the registration request could not be saved. Please contact an administrator.');
+    }
+
+    setAuthNotice('Your registration request was submitted. You can sign in after an administrator approves it.');
+  }, []);
+
+  const logout = useCallback(async () => {
+    setAuthNotice(null);
+    await signOut(auth);
+  }, []);
+
+  const clearAuthNotice = useCallback(() => setAuthNotice(null), []);
+
   const saveBusinessName = useCallback(async (businessName: string) => {
     const currentUser = auth.currentUser;
     const normalizedName = businessName.trim();
@@ -125,27 +217,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!normalizedName) throw new Error('Enter your Business Name to continue.');
 
     const profileRef = doc(db, 'users', currentUser.uid);
-    const nextProfile = {
-      businessName: normalizedName,
-      email: currentUser.email || '',
-      role: isAdmin ? 'admin' as const : 'user' as const,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    };
-
     const existingProfile = await getDoc(profileRef);
     if (existingProfile.exists()) {
       await updateDoc(profileRef, {
         businessName: normalizedName,
         updatedAt: serverTimestamp()
       });
+    } else if (isAdmin) {
+      const timestamp = serverTimestamp();
+      await setDoc(profileRef, {
+        businessName: normalizedName,
+        email: currentUser.email || '',
+        role: 'admin',
+        approvalStatus: 'approved',
+        createdAt: timestamp,
+        updatedAt: timestamp
+      });
     } else {
-      await setDoc(profileRef, nextProfile);
+      throw new Error('A registration request must be approved before creating a business profile.');
     }
+
+    setProfile((currentProfile) => ({
+      businessName: normalizedName,
+      email: currentProfile?.email || currentUser.email || undefined,
+      role: currentProfile?.role || (isAdmin ? 'admin' : 'user'),
+      approvalStatus: 'approved',
+      createdAt: currentProfile?.createdAt,
+      updatedAt: currentProfile?.updatedAt
+    }));
   }, [isAdmin]);
 
   return (
-    <AuthContext.Provider value={{ user, profile, isAdmin, loading, authError, saveBusinessName }}>
+    <AuthContext.Provider value={{
+      user,
+      profile,
+      isAdmin,
+      approvalStatus,
+      loading,
+      authError,
+      authNotice,
+      signIn,
+      registerAccount,
+      logout,
+      clearAuthNotice,
+      saveBusinessName
+    }}>
       {loading ? <LoadingScreen /> : children}
     </AuthContext.Provider>
   );

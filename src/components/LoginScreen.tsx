@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { auth } from '../../lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useAuth } from '../../context/AuthContext';
 import { 
   Bike as BikeIcon, 
   Lock, 
@@ -8,23 +7,31 @@ import {
   EyeOff, 
   LogIn, 
   ShieldCheck, 
-  AlertCircle
+  AlertCircle,
+  UserPlus
 } from 'lucide-react';
 
 export const LoginScreen: React.FC = () => {
+  const { signIn, registerAccount, authNotice, clearAuthNotice } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+    clearAuthNotice();
     setIsLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      if (isRegistering) {
+        await registerAccount(email, password);
+      } else {
+        await signIn(email, password);
+      }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unable to sign in. Please try again.');
     } finally {
@@ -75,6 +82,16 @@ export const LoginScreen: React.FC = () => {
             </div>
           )}
 
+          {authNotice && (
+            <div
+              role="status"
+              className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-2.5 animate-fadeIn"
+            >
+              <ShieldCheck className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" aria-hidden="true" />
+              <div className="flex-1 font-medium">{authNotice}</div>
+            </div>
+          )}
+
           {/* Email */}
           <div className="space-y-1.5">
             <label htmlFor="login-email" className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
@@ -108,6 +125,7 @@ export const LoginScreen: React.FC = () => {
                 id="login-password"
                 type={showPassword ? 'text' : 'password'}
                 required
+                minLength={isRegistering ? 6 : undefined}
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => {
@@ -138,10 +156,28 @@ export const LoginScreen: React.FC = () => {
             {isLoading ? (
               <span className="inline-block w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
             ) : (
-              <LogIn className="w-4 h-4 stroke-[3]" aria-hidden="true" />
+              isRegistering
+                ? <UserPlus className="w-4 h-4 stroke-[3]" aria-hidden="true" />
+                : <LogIn className="w-4 h-4 stroke-[3]" aria-hidden="true" />
             )}
-            <span>Sign In</span>
+            <span>{isRegistering ? 'Request Account' : 'Sign In'}</span>
           </button>
+
+          <p className="text-center text-xs text-slate-400">
+            {isRegistering ? 'Already have an account?' : 'Need an account?'}{' '}
+            <button
+              type="button"
+              disabled={isLoading}
+              onClick={() => {
+                setIsRegistering(!isRegistering);
+                setErrorMessage('');
+                clearAuthNotice();
+              }}
+              className="font-bold text-sky-300 hover:text-sky-200 underline underline-offset-4 disabled:opacity-50"
+            >
+              {isRegistering ? 'Sign in' : 'Register'}
+            </button>
+          </p>
 
         </form>
 

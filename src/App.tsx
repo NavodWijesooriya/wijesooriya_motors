@@ -27,35 +27,7 @@ import { Bike as BikeIcon } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
   const { activeTab, summary, logout, isBusinessDataLoading } = useDealership();
-  const { user, profile, authError } = useAuth();
-
-  if (!user) {
-    return (
-      <>
-        <LoginScreen />
-        <ToastContainer />
-      </>
-    );
-  }
-
-  if (authError) {
-    return (
-      <main className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-950 p-6 text-center text-slate-100">
-        <h1 className="text-2xl font-black">Sales POS</h1>
-        <p role="alert" className="max-w-lg text-sm text-rose-300">{authError}</p>
-        <button
-          type="button"
-          onClick={() => window.location.reload()}
-          className="rounded-xl bg-sky-500 px-5 py-3 font-bold text-slate-950"
-        >
-          Retry
-        </button>
-        <button type="button" onClick={logout} className="text-sm font-semibold text-slate-400 hover:text-white">
-          Sign out
-        </button>
-      </main>
-    );
-  }
+  const { profile } = useAuth();
 
   if (!profile?.businessName.trim()) return <BusinessNameSetup />;
   if (isBusinessDataLoading) return <LoadingScreen />;
@@ -129,15 +101,82 @@ const MainLayout: React.FC = () => {
   );
 };
 
+const AuthenticatedApp: React.FC = () => {
+  const { user, profile, approvalStatus, authError, authNotice, logout } = useAuth();
+
+  if (!user) {
+    return (
+      <LoginScreen />
+    );
+  }
+
+  if (authError) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-950 p-6 text-center text-slate-100">
+        <h1 className="text-2xl font-black">Sales POS</h1>
+        <p role="alert" className="max-w-lg text-sm text-rose-300">{authError}</p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="rounded-xl bg-sky-500 px-5 py-3 font-bold text-slate-950"
+        >
+          Retry
+        </button>
+        <button type="button" onClick={() => void logout()} className="text-sm font-semibold text-slate-400 hover:text-white">
+          Sign out
+        </button>
+      </main>
+    );
+  }
+
+  if (approvalStatus !== 'approved') {
+    const message = approvalStatus === 'pending'
+      ? 'Your registration is pending administrator approval.'
+      : approvalStatus === 'rejected'
+        ? 'Your registration request was not approved. You cannot access the system.'
+        : 'No registration request was found for this account.';
+
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-950 p-6 text-center text-slate-100">
+        <BikeIcon className="h-10 w-10 text-sky-400" aria-hidden="true" />
+        <h1 className="text-2xl font-black">Account approval required</h1>
+        <p role="status" className="max-w-md text-sm text-slate-300">{authNotice || message}</p>
+        <button
+          type="button"
+          onClick={() => void logout()}
+          className="rounded-xl bg-sky-500 px-5 py-3 font-bold text-slate-950"
+        >
+          Sign out
+        </button>
+      </main>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-950 p-6 text-center text-slate-100">
+        <p role="alert" className="text-sm text-rose-300">Your approved profile could not be loaded. Please try again.</p>
+        <button type="button" onClick={() => void logout()} className="text-sm font-semibold text-slate-400 hover:text-white">
+          Sign out
+        </button>
+      </main>
+    );
+  }
+
+  return (
+    <DealershipProvider>
+      <>
+        <MainLayout />
+        <PWAUpdateNotice />
+      </>
+    </DealershipProvider>
+  );
+};
+
 export default function App() {
   return (
     <AuthProvider>
-      <DealershipProvider>
-        <>
-          <MainLayout />
-          <PWAUpdateNotice />
-        </>
-      </DealershipProvider>
+      <AuthenticatedApp />
     </AuthProvider>
   );
 }

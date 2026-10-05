@@ -10,10 +10,66 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
+    function isApprovedUser(userId) {
+      return isOwnUser(userId)
+        && exists(/databases/$(database)/documents/users/$(userId))
+        && (
+          get(/databases/$(database)/documents/users/$(userId)).data.approvalStatus == 'approved'
+          || !get(/databases/$(database)/documents/users/$(userId)).data.keys().hasAny(['approvalStatus'])
+        );
+    }
+
     function isAdmin() {
       return signedIn()
         && exists(/databases/$(database)/documents/userRoles/$(request.auth.uid))
         && get(/databases/$(database)/documents/userRoles/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isPendingRegistrationRequest(userId) {
+      return isOwnUser(userId)
+        && request.resource.data.keys().hasOnly([
+          'businessName', 'email', 'role', 'approvalStatus', 'submittedAt', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'businessName', 'email', 'role', 'approvalStatus', 'submittedAt', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.businessName == ''
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.role == 'user'
+        && request.resource.data.approvalStatus == 'pending'
+        && request.resource.data.submittedAt == request.time
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    function isInitialAdminProfile(userId) {
+      return isOwnUser(userId)
+        && isAdmin()
+        && request.resource.data.keys().hasOnly([
+          'businessName', 'email', 'role', 'approvalStatus', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'businessName', 'email', 'role', 'approvalStatus', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.businessName is string
+        && request.resource.data.businessName.size() > 0
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.role == 'admin'
+        && request.resource.data.approvalStatus == 'approved'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    function isAdminApprovalUpdate() {
+      return isAdmin()
+        && resource.data.approvalStatus == 'pending'
+        && request.resource.data.approvalStatus in ['approved', 'rejected']
+        && request.resource.data.reviewedBy == request.auth.uid
+        && request.resource.data.reviewedAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'approvalStatus', 'reviewedBy', 'reviewedAt', 'updatedAt'
+        ]);
     }
 
     match /userRoles/{userId} {
@@ -22,39 +78,40 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow get: if isOwnUser(userId);
-      allow list, delete: if false;
-      allow create: if isOwnUser(userId)
-        && request.resource.data.keys().hasOnly(['businessName', 'email', 'role', 'createdAt', 'updatedAt'])
-        && request.resource.data.keys().hasAll(['businessName', 'email', 'role', 'createdAt', 'updatedAt'])
+      allow get: if isOwnUser(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow delete: if false;
+      allow create: if isPendingRegistrationRequest(userId) || isInitialAdminProfile(userId);
+      allow update: if isAdminApprovalUpdate()
+        || (isOwnUser(userId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['businessName', 'updatedAt'])
         && request.resource.data.businessName is string
         && request.resource.data.businessName.size() > 0
-        && request.resource.data.email == request.auth.token.email
-        && request.resource.data.role == (isAdmin() ? 'admin' : 'user')
-        && request.resource.data.createdAt == request.time
-        && request.resource.data.updatedAt == request.time;
-      allow update: if isOwnUser(userId)
-        && request.resource.data.keys().hasOnly(['businessName', 'email', 'role', 'createdAt', 'updatedAt'])
-        && request.resource.data.businessName is string
-        && request.resource.data.businessName.size() > 0
-        && request.resource.data.email == resource.data.email
-        && request.resource.data.role == resource.data.role
-        && request.resource.data.createdAt == resource.data.createdAt
-        && request.resource.data.updatedAt == request.time;
+        && (!resource.data.keys().hasAny(['email']) || request.resource.data.email == resource.data.email)
+        && (!resource.data.keys().hasAny(['role']) || request.resource.data.role == resource.data.role)
+        && (!resource.data.keys().hasAny(['createdAt']) || request.resource.data.createdAt == resource.data.createdAt)
+        && (
+          !resource.data.keys().hasAny(['approvalStatus'])
+          || (
+            resource.data.approvalStatus == 'approved'
+            && request.resource.data.approvalStatus == resource.data.approvalStatus
+          )
+        )
+        && request.resource.data.updatedAt == request.time);
 
       match /{collectionName}/{documentId} {
-        allow read, write: if isOwnUser(userId);
+        allow read, write: if isApprovedUser(userId);
       }
 
       match /{collectionName}/{documentId}/{nestedDocument=**} {
-        allow read, write: if isOwnUser(userId);
+        allow read, write: if isApprovedUser(userId);
       }
     }
 
     // Legacy data remains readable by its recorded owner for one-time migration.
     // All new writes must use the user's private document tree.
     match /bikes/{bikeId} {
-      allow get, list: if signedIn() && resource.data.ownerUid == request.auth.uid;
+      allow get, list: if isApprovedUser(request.auth.uid) && resource.data.ownerUid == request.auth.uid;
       allow create, update, delete: if false;
     }
 
