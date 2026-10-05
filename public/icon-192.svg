@@ -31,5 +31,5 @@
   <path d="M190 225 C220 210, 250 200, 310 210 L340 215" fill="none" stroke="#f8fafc" stroke-width="16" stroke-linecap="round" />
   <path d="M330 200 L320 180 L300 182" fill="none" stroke="#e2e8f0" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
   <path d="M340 215 L375 235 L350 255" fill="none" stroke="url(#goldGrad)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
-  <text x="256" y="420" text-anchor="middle" fill="#f8fafc" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="36" letter-spacing="4">APEX<tspan fill="#38bdf8">MOTO</tspan></text>
+  <text x="256" y="420" text-anchor="middle" fill="#f8fafc" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="34" letter-spacing="2">Sale<tspan fill="#38bdf8"> Pos</tspan></text>
 </svg>
