@@ -28,6 +28,7 @@ interface AuthContextValue {
   profile: UserProfile | null;
   isAdmin: boolean;
   approvalStatus: ApprovalStatus;
+  approvalStatusVerified: boolean;
   loading: boolean;
   authError: string | null;
   authNotice: string | null;
@@ -43,6 +44,7 @@ const AuthContext = createContext<AuthContextValue>({
   profile: null,
   isAdmin: false,
   approvalStatus: 'unregistered',
+  approvalStatusVerified: false,
   loading: true,
   authError: null,
   authNotice: null,
@@ -66,6 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState<ApprovalStatus>('unregistered');
+  const [approvalStatusVerified, setApprovalStatusVerified] = useState(false);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const [authNotice, setAuthNotice] = useState<string | null>(null);
@@ -86,6 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setProfile(null);
       setIsAdmin(false);
       setApprovalStatus('unregistered');
+      setApprovalStatusVerified(false);
       setAuthError(null);
 
       if (!currentUser) {
@@ -110,6 +114,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               : 'approved';
 
           setApprovalStatus(status);
+          if (!profileSnapshot.metadata.fromCache) setApprovalStatusVerified(true);
           setProfile(profileSnapshot.exists()
             ? {
                 businessName: typeof data.businessName === 'string' ? data.businessName : '',
@@ -123,7 +128,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           profileLoaded = true;
           finishLoading();
 
-          if ((status === 'pending' || status === 'rejected') && !accessRevocationRequested) {
+          if (
+            !profileSnapshot.metadata.fromCache
+            && (status === 'pending' || status === 'rejected')
+            && !accessRevocationRequested
+          ) {
             accessRevocationRequested = true;
             setAuthNotice(status === 'pending'
               ? 'Your registration is pending administrator approval.'
@@ -253,6 +262,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       profile,
       isAdmin,
       approvalStatus,
+      approvalStatusVerified,
       loading,
       authError,
       authNotice,

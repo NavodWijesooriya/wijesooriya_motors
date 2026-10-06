@@ -117,7 +117,7 @@ const MainLayout: React.FC = () => {
 };
 
 const AuthenticatedApp: React.FC = () => {
-  const { user, profile, approvalStatus, authError, authNotice, logout } = useAuth();
+  const { user, profile, approvalStatus, approvalStatusVerified, authError, authNotice, logout } = useAuth();
 
   if (!user) {
     return (
@@ -145,11 +145,13 @@ const AuthenticatedApp: React.FC = () => {
   }
 
   if (approvalStatus !== 'approved') {
-    const message = approvalStatus === 'pending'
-      ? 'Your registration is pending administrator approval.'
-      : approvalStatus === 'rejected'
-        ? 'Your registration request was not approved. You cannot access the system.'
-        : 'No registration request was found for this account.';
+    const message = !approvalStatusVerified
+      ? 'Checking your latest account approval status...'
+      : approvalStatus === 'pending'
+        ? 'Your registration is pending administrator approval.'
+        : approvalStatus === 'rejected'
+          ? 'Your registration request was not approved. You cannot access the system.'
+          : 'No registration request was found for this account.';
 
     return (
       <main className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-950 p-6 text-center text-slate-100">
