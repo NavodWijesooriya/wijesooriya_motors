@@ -22,7 +22,8 @@ import { useAuth } from '../../context/AuthContext';
 export const BikeDetailModal: React.FC = () => {
   const { isAdmin } = useAuth();
   const { 
-    selectedBike, 
+    selectedBike: selectedBikeSnapshot,
+    bikes,
     isDetailModalOpen, 
     setIsDetailModalOpen, 
     openSaleModalForBike, 
@@ -41,8 +42,9 @@ export const BikeDetailModal: React.FC = () => {
   const [costError, setCostError] = useState('');
   const [isSavingCost, setIsSavingCost] = useState(false);
 
-  if (!isDetailModalOpen || !selectedBike) return null;
+  if (!isDetailModalOpen || !selectedBikeSnapshot) return null;
 
+  const selectedBike = bikes.find((bike) => bike.id === selectedBikeSnapshot.id) || selectedBikeSnapshot;
   const symbol = settings.currencySymbol;
   const isSold = selectedBike.status === 'Sold';
   const totalOtherCosts = calculateTotalOtherCosts(selectedBike.repairCosts);

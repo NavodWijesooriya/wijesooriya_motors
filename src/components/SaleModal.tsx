@@ -67,11 +67,15 @@ export const SaleModal: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (activeBike) {
-      setCurrentBikeId(activeBike.id);
-      setSaleAmount('');
-      setFinanceAmount('');
-    }
+    if (!isSaleModalOpen) return;
+    const requestedBike = inStockBikes.find((bike) => bike.id === selectedBike?.id);
+    const initialBike = requestedBike || inStockBikes[0];
+    setCurrentBikeId(initialBike?.id || '');
+  }, [isSaleModalOpen, selectedBike?.id]);
+
+  useEffect(() => {
+    setSaleAmount('');
+    setFinanceAmount('');
     setFormError('');
   }, [activeBike?.id, isSaleModalOpen]);
 
