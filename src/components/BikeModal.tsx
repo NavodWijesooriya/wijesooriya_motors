@@ -608,7 +608,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
                   <input
                     type="number"
                     required
-                    min="0"
+                    min=""
                     step="1000"
                     placeholder="e.g. 750000"
                     value={costPrice}
@@ -634,7 +634,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">{symbol}</span>
                   <input
                     type="number"
-                    min="0"
+                    min=""
                     step="1000"
                     placeholder="e.g. 950000"
                     value={targetSalePrice}
@@ -732,7 +732,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
                   type="number"
                   aria-label="Cost amount"
                   placeholder="Cost Amount"
-                  min="0"
+                  min=""
                   step="100"
                   value={newCostAmount}
                   onChange={(e) => {
