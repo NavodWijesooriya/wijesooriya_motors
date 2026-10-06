@@ -57,7 +57,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
   const [vehicleType, setVehicleType] = useState<VehicleType>('Bike');
   const [make, setMake] = useState('Honda');
   const [model, setModel] = useState('');
-  const [year, setYear] = useState<number>(new Date().getFullYear());
+  const [year, setYear] = useState<number | ''>(new Date().getFullYear());
   const [category, setCategory] = useState<BikeCategory>('Manual');
   const [condition, setCondition] = useState<BikeCondition>('Used');
   const [regPlate, setRegPlate] = useState('');
@@ -163,7 +163,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
       description,
       cost: Number(newCostAmount),
       date: new Date().toISOString().split('T')[0],
-      invoiceRef: newCostInvoice.trim() || undefined
+      ...(newCostInvoice.trim() ? { invoiceRef: newCostInvoice.trim() } : {})
     };
 
     setOtherCosts([...otherCosts, newItem]);
@@ -191,6 +191,10 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
 
     if (!model.trim()) {
       setFormError('Please enter the vehicle or vehicle model name.');
+      return;
+    }
+    if (year === '' || year < 1980 || year > new Date().getFullYear() + 1) {
+      setFormError(`Please enter a model year between 1980 and ${new Date().getFullYear() + 1}.`);
       return;
     }
     if (numCostPrice <= 0) {
@@ -413,7 +417,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
                   min="1980"
                   max={new Date().getFullYear() + 1}
                   value={year}
-                  onChange={(e) => setYear(Number(e.target.value))}
+                  onChange={(e) => setYear(e.target.value === '' ? '' : Number(e.target.value))}
                   className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-sky-500 font-mono"
                 />
               </div>

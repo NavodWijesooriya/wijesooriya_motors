@@ -64,7 +64,7 @@ export const BikeDetailModal: React.FC = () => {
         description: costDesc.trim() || `${costCategory} Expense`,
         cost: Number(costAmount),
         date: new Date().toISOString().split('T')[0],
-        invoiceRef: costInvoice.trim() || undefined
+        ...(costInvoice.trim() ? { invoiceRef: costInvoice.trim() } : {})
       });
       setCostDesc('');
       setCostAmount('');

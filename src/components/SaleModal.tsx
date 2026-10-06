@@ -39,10 +39,8 @@ export const SaleModal: React.FC = () => {
 
   const [saleMethod, setSaleMethod] = useState<SaleMethod>('Cash');
   const [saleDate, setSaleDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [saleAmount, setSaleAmount] = useState<number>(activeBike?.targetSalePrice || 750000);
-  const [financeAmount, setFinanceAmount] = useState<number>(
-    Math.round((activeBike?.targetSalePrice || 750000) * 0.8)
-  );
+  const [saleAmount, setSaleAmount] = useState<number | ''>('');
+  const [financeAmount, setFinanceAmount] = useState<number | ''>('');
 
   // Customer Details (Printed on Document)
   const [customerName, setCustomerName] = useState<string>('');
@@ -71,8 +69,8 @@ export const SaleModal: React.FC = () => {
   useEffect(() => {
     if (activeBike) {
       setCurrentBikeId(activeBike.id);
-      setSaleAmount(activeBike.targetSalePrice);
-      setFinanceAmount(Math.round(activeBike.targetSalePrice * 0.8));
+      setSaleAmount('');
+      setFinanceAmount('');
     }
     setFormError('');
   }, [activeBike?.id, isSaleModalOpen]);
@@ -103,13 +101,15 @@ export const SaleModal: React.FC = () => {
   const costPrice = activeBike.purchasePrice;
   const totalOtherCosts = calculateTotalOtherCosts(activeBike.repairCosts);
   const totalCost = activeBike.totalCost;
+  const numericSaleAmount = Number(saleAmount) || 0;
+  const numericFinanceAmount = Number(financeAmount) || 0;
 
   const financials = computeSaleFinancials({
     saleMethod,
-    saleAmount,
+    saleAmount: numericSaleAmount,
     purchasePrice: costPrice,
     totalRepairCost: totalOtherCosts,
-    financeAmount,
+    financeAmount: numericFinanceAmount,
     financeCommissionRate: 0.03
   });
 
@@ -120,6 +120,11 @@ export const SaleModal: React.FC = () => {
 
     if (!customerName.trim()) {
       setFormError('Please enter the customer name.');
+      return;
+    }
+
+    if (saleAmount === '' || Number(saleAmount) <= 0) {
+      setFormError('Please enter a valid full selling price for the vehicle.');
       return;
     }
 
@@ -156,8 +161,8 @@ export const SaleModal: React.FC = () => {
         setFormError('Please enter the guarantor’s ID / NIC number for the finance sale document.');
         return;
       }
-      if (financeAmount <= 0 || financeAmount > saleAmount) {
-        setFormError(`Please specify a valid finance amount between ${symbol} 1 and ${formatCurrency(saleAmount, symbol)}.`);
+      if (financeAmount === '' || Number(financeAmount) <= 0 || Number(financeAmount) > Number(saleAmount)) {
+        setFormError(`Please specify a valid finance amount between ${symbol} 1 and ${formatCurrency(Number(saleAmount), symbol)}.`);
         return;
       }
     }
@@ -167,7 +172,7 @@ export const SaleModal: React.FC = () => {
       const saleRecord = await recordSale(activeBike.id, {
       saleDate,
       saleMethod,
-      saleAmount,
+      saleAmount: Number(saleAmount),
       purchasePrice: costPrice,
       totalRepairCost: totalOtherCosts,
       totalCost,
@@ -348,10 +353,11 @@ export const SaleModal: React.FC = () => {
                   step="1000"
                   value={saleAmount}
                   onChange={(e) => {
-                    const newAmount = Number(e.target.value) || 0;
+                    const rawValue = e.target.value;
+                    const newAmount = rawValue === '' ? '' : Number(rawValue);
                     setSaleAmount(newAmount);
-                    if (financeAmount > newAmount) {
-                      setFinanceAmount(newAmount);
+                    if (financeAmount !== '' && Number(financeAmount) > Number(newAmount || 0)) {
+                      setFinanceAmount(Number(newAmount || 0));
                     }
                   }}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-12 pr-3.5 py-2.5 text-sm text-white font-mono font-black outline-none focus:border-emerald-500"
@@ -400,10 +406,13 @@ export const SaleModal: React.FC = () => {
                       type="number"
                       required
                       min="0"
-                      max={saleAmount}
+                      max={saleAmount === '' ? undefined : Number(saleAmount) || undefined}
                       step="1000"
                       value={financeAmount}
-                      onChange={(e) => setFinanceAmount(Number(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const rawValue = e.target.value;
+                        setFinanceAmount(rawValue === '' ? '' : Number(rawValue));
+                      }}
                       className="w-full bg-slate-900 border border-amber-500/40 rounded-xl pl-12 pr-3.5 py-2.5 text-sm text-amber-300 font-mono font-black outline-none"
                     />
                   </div>
