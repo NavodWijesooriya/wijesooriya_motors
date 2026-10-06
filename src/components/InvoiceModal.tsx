@@ -216,6 +216,7 @@ export const InvoiceModal: React.FC = () => {
   const agreementNumber = `WM-AGR-${sale.id.toUpperCase()}`;
   const documentNumber = documentType === 'agreement' ? agreementNumber : billNumber;
   const documentName = documentType === 'agreement' ? 'Sale Agreement' : 'Vehicle Sale Bill';
+  const businessName = settings.dealershipName.trim();
   const isFinance = sale.saleMethod === 'Finance';
   const symbol = settings.currencySymbol;
   const amountPaid = isFinance ? sale.customerDeposit || 0 : sale.saleAmount;
@@ -363,6 +364,7 @@ export const InvoiceModal: React.FC = () => {
           {documentType === 'agreement' ? (
             <article ref={sheetRef} style={{ ...sheetStyle, gap: '17px', padding: '55px 65px 42px', fontSize: '12px' }}>
               <header data-pdf-section style={{ textAlign: 'center', paddingBottom: '7px' }}>
+                {businessName && <div style={{ color: '#172d48', fontSize: '18px', fontWeight: 800, marginBottom: '9px' }}>{businessName}</div>}
                 <div lang="si" style={{ color: '#172033', fontSize: '20px', fontWeight: 700 }}>වාහන විකුණුම් ගිවිසුම</div>
                 <div style={{ color: '#303b4b', fontSize: '15px', fontWeight: 800 }}>VEHICLE SALE AGREEMENT</div>
               </header>
@@ -374,7 +376,7 @@ export const InvoiceModal: React.FC = () => {
 
               <div data-pdf-section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '26px' }}>
                 <AgreementSection title="1. විකුණුම්කරුගේ විස්තර (Seller's Details)">
-                  <AgreementRow label="නම (Name)" value={settings.dealershipName} />
+                  <AgreementRow label="නම (Name)" value={businessName} />
                   <AgreementRow label="ජා.හැ.අ (NIC No.)" />
                   <AgreementRow label="ලිපිනය (Address)" value={settings.address} />
                   <AgreementRow label="දුරකථන (Phone)" value={settings.phone} />
@@ -426,7 +428,7 @@ export const InvoiceModal: React.FC = () => {
                 </div>
               </div>
               <footer data-pdf-section style={{ textAlign: 'center', color: '#68778a', fontSize: '9px' }}>
-                {agreementNumber} · {settings.dealershipName}
+                {agreementNumber} · {businessName || 'Vehicle Sale Agreement'}
               </footer>
             </article>
           ) : (
@@ -438,8 +440,8 @@ export const InvoiceModal: React.FC = () => {
                     <BikeIcon size={30} aria-hidden="true" />
                   </div>
                   <div>
-                    <div style={{ color: '#172d48', fontSize: '23px', fontWeight: 800, letterSpacing: '0.035em' }}>WIJESORIYA MOTORS</div>
-                    <div style={{ color: '#5d6d80', fontSize: '12px', fontWeight: 600, letterSpacing: '0.08em' }}>Vehicle Sales &amp; Services</div>
+                    <div style={{ color: '#172d48', fontSize: '23px', fontWeight: 800, letterSpacing: '0.035em' }}>{businessName || 'Vehicle Sales & Services'}</div>
+                    {settings.tagline && <div style={{ color: '#5d6d80', fontSize: '12px', fontWeight: 600, letterSpacing: '0.04em' }}>{settings.tagline}</div>}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', color: '#627187', fontSize: '10px', lineHeight: 1.6 }}>
@@ -484,7 +486,9 @@ export const InvoiceModal: React.FC = () => {
             </section>
 
             <footer data-pdf-section style={{ marginTop: 'auto', borderTop: '1px solid #dce3eb', paddingTop: '13px', textAlign: 'center', color: '#637187' }}>
-              <div style={{ color: '#172d48', fontSize: '14px', fontWeight: 700 }}>Thank you for choosing Wijesooriya Motors.</div>
+              <div style={{ color: '#172d48', fontSize: '14px', fontWeight: 700 }}>
+                {businessName ? `Thank you for choosing ${businessName}.` : 'Thank you for your business.'}
+              </div>
               <div style={{ marginTop: '4px', fontSize: '10px' }}>
                 {settings.address}{settings.phone ? ` · ${settings.phone}` : ''}{settings.email ? ` · ${settings.email}` : ''}
               </div>

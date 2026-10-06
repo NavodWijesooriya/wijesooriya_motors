@@ -54,11 +54,12 @@ export const InventoryView: React.FC = () => {
     return Array.from(owners, ([uid, label]) => ({ uid, label })).sort((a, b) => a.label.localeCompare(b.label));
   }, [bikes]);
 
-  // Bikes Inventory section strictly displays In-Stock vehicles. Sold items do NOT show here.
-  const inStockBikes = useMemo(() => bikes.filter(b => b.status === 'In Stock'), [bikes]);
+  // Sold vehicles belong in the sales ledger, not the inventory list.
+  const inventoryBikes = useMemo(() => bikes.filter((bike) => bike.status !== 'Sold'), [bikes]);
+  const inStockBikes = useMemo(() => inventoryBikes.filter((bike) => bike.status === 'In Stock'), [inventoryBikes]);
   const inStockCount = inStockBikes.length;
   const soldCount = useMemo(() => bikes.filter(b => b.status === 'Sold').length, [bikes]);
-  const visibleBikes = isAdmin ? bikes : inStockBikes;
+  const visibleBikes = inventoryBikes;
 
   const filteredBikes = useMemo(() => {
     return visibleBikes.filter((bike) => {
@@ -128,13 +129,13 @@ export const InventoryView: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
-            {isAdmin ? <>Vehicle <span className="text-sky-400">Records</span></> : <>Vehicle <span className="text-sky-400">Inventory</span></>}
+            <>Vehicle <span className="text-sky-400">Inventory</span></>
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/30 font-mono font-bold">
-              {isAdmin ? `${bikes.length} Total` : `${inStockCount} In Stock`}
+              {`${visibleBikes.length} Inventory`}
             </span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            {isAdmin ? 'All vehicle records for this business, including ownership and audit history.' : 'Active showroom stock available for sale. Sold vehicles are recorded in Sales & Commissions.'}
+            {isAdmin ? 'Vehicles currently in stock or reserved. Sold vehicles are recorded in Sales & Commissions.' : 'Active showroom stock available for sale. Sold vehicles are recorded in Sales & Commissions.'}
           </p>
         </div>
 
@@ -235,13 +236,12 @@ export const InventoryView: React.FC = () => {
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
-              aria-label="Filter records by status"
+              aria-label="Filter inventory by status"
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 min-h-[44px] text-xs text-slate-200 outline-none"
             >
-              <option value="All">All Statuses</option>
+              <option value="All">All Inventory Statuses</option>
               <option value="In Stock">In Stock</option>
               <option value="Reserved">Reserved</option>
-              <option value="Sold">Sold</option>
             </select>
             <label className="text-[11px] text-slate-400">
               Created from
@@ -631,7 +631,7 @@ export const InventoryView: React.FC = () => {
             <BikeIcon className="w-8 h-8" />
           </div>
 
-          {soldCount > 0 && inStockBikes.length === 0 ? (
+          {soldCount > 0 && inventoryBikes.length === 0 ? (
             <>
               <h3 className="text-lg font-black text-white">All Showroom Vehicles Have Been Sold</h3>
               <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
