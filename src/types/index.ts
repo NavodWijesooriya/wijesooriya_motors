@@ -33,6 +33,7 @@ export type RepairCostItem = OtherCostItem;
 export interface SaleRecord {
   id: string;
   bikeId: string;
+  customerId?: string;
   vehicleType?: VehicleType;
   bikeSummary: string;
   saleDate: string;

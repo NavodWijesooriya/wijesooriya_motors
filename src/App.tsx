@@ -26,10 +26,25 @@ import { PWAUpdateNotice } from './components/PWAUpdateNotice';
 import { Bike as BikeIcon } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
-  const { activeTab, summary, logout, isBusinessDataLoading } = useDealership();
+  const { activeTab, summary, logout, isBusinessDataLoading, businessDataError } = useDealership();
   const { profile } = useAuth();
 
   if (!profile?.businessName.trim()) return <BusinessNameSetup />;
+  if (businessDataError) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-950 p-6 text-center text-slate-100">
+        <h1 className="text-2xl font-black">Saved data unavailable</h1>
+        <p role="alert" className="max-w-lg text-sm text-rose-300">{businessDataError}</p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="rounded-xl bg-sky-500 px-5 py-3 font-bold text-slate-950"
+        >
+          Retry
+        </button>
+      </main>
+    );
+  }
   if (isBusinessDataLoading) return <LoadingScreen />;
 
   return (

@@ -38,6 +38,8 @@ export const BikeDetailModal: React.FC = () => {
   const [costDesc, setCostDesc] = useState('');
   const [costAmount, setCostAmount] = useState<number | ''>('');
   const [costInvoice, setCostInvoice] = useState('');
+  const [costError, setCostError] = useState('');
+  const [isSavingCost, setIsSavingCost] = useState(false);
 
   if (!isDetailModalOpen || !selectedBike) return null;
 
@@ -50,21 +52,29 @@ export const BikeDetailModal: React.FC = () => {
   const netProfit = isSold && selectedBike.sale ? selectedBike.sale.netProfit : (sellingPrice - totalCost);
   const profitMarginPercent = sellingPrice > 0 ? (netProfit / sellingPrice) * 100 : 0;
 
-  const handleSaveOtherCost = (e: React.FormEvent) => {
+  const handleSaveOtherCost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!costAmount || Number(costAmount) <= 0) return;
-    
-    addRepairItem(selectedBike.id, {
-      category: costCategory,
-      description: costDesc.trim() || `${costCategory} Expense`,
-      cost: Number(costAmount),
-      date: new Date().toISOString().split('T')[0],
-      invoiceRef: costInvoice.trim() || undefined
-    });
-    setCostDesc('');
-    setCostAmount('');
-    setCostInvoice('');
-    setShowAddOtherCost(false);
+    if (isSavingCost) return;
+    setCostError('');
+    setIsSavingCost(true);
+    try {
+      await addRepairItem(selectedBike.id, {
+        category: costCategory,
+        description: costDesc.trim() || `${costCategory} Expense`,
+        cost: Number(costAmount),
+        date: new Date().toISOString().split('T')[0],
+        invoiceRef: costInvoice.trim() || undefined
+      });
+      setCostDesc('');
+      setCostAmount('');
+      setCostInvoice('');
+      setShowAddOtherCost(false);
+    } catch (error) {
+      setCostError(error instanceof Error ? error.message : 'The expense could not be saved.');
+    } finally {
+      setIsSavingCost(false);
+    }
   };
 
   return (
@@ -340,6 +350,7 @@ export const BikeDetailModal: React.FC = () => {
 
             {showAddOtherCost && (
               <form onSubmit={handleSaveOtherCost} className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
+                {costError && <p role="alert" className="text-xs text-rose-300">{costError}</p>}
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
                   <div className="sm:col-span-3">
                     <select
@@ -385,9 +396,10 @@ export const BikeDetailModal: React.FC = () => {
                   <div className="sm:col-span-2">
                     <button
                       type="submit"
+                      disabled={isSavingCost}
                       className="w-full py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors"
                     >
-                      Save Cost
+                      {isSavingCost ? 'Saving...' : 'Save Cost'}
                     </button>
                   </div>
                 </div>
@@ -415,7 +427,7 @@ export const BikeDetailModal: React.FC = () => {
                       {!isSold && (
                         <button
                           type="button"
-                          onClick={() => removeRepairItem(selectedBike.id, item.id)}
+                          onClick={() => void removeRepairItem(selectedBike.id, item.id).catch(() => undefined)}
                           className="p-1 rounded text-slate-500 hover:text-rose-400 transition-colors"
                           title="Delete Expense"
                         >

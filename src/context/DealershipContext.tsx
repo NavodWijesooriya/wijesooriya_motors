@@ -31,6 +31,7 @@ interface DealershipContextType {
   settings: DealershipSettings;
   summary: FinancialSummary;
   isBusinessDataLoading: boolean;
+  businessDataError: string | null;
   activeTab: 'dashboard' | 'inventory' | 'sales' | 'summary' | 'calculator' | 'settings';
   setActiveTab: (tab: 'dashboard' | 'inventory' | 'sales' | 'summary' | 'calculator' | 'settings') => void;
   
@@ -52,18 +53,18 @@ interface DealershipContextType {
   setIsInvoiceModalOpen: (open: boolean) => void;
   
   // Actions
-  addBike: (data: Partial<Bike>) => Bike;
-  updateBike: (id: string, updates: Partial<Bike>) => void;
+  addBike: (data: Partial<Bike>) => Promise<Bike>;
+  updateBike: (id: string, updates: Partial<Bike>) => Promise<void>;
   deleteBike: (id: string) => Promise<void>;
-  recordSale: (bikeId: string, saleData: Omit<SaleRecord, 'id' | 'bikeId'>) => SaleRecord;
-  revertSale: (bikeId: string) => void;
-  addRepairItem: (bikeId: string, item: Omit<OtherCostItem, 'id'>) => void;
-  removeRepairItem: (bikeId: string, repairId: string) => void;
+  recordSale: (bikeId: string, saleData: Omit<SaleRecord, 'id' | 'bikeId' | 'customerId'>) => Promise<SaleRecord>;
+  revertSale: (bikeId: string) => Promise<void>;
+  addRepairItem: (bikeId: string, item: Omit<OtherCostItem, 'id'>) => Promise<void>;
+  removeRepairItem: (bikeId: string, repairId: string) => Promise<void>;
   updateSettings: (updates: Partial<DealershipSettings>) => Promise<void>;
-  resetToDefaultData: () => void;
-  clearAllData: () => void;
+  resetToDefaultData: () => Promise<void>;
+  clearAllData: () => Promise<void>;
   exportDataToJson: () => void;
-  importDataFromJson: (jsonStr: string) => boolean;
+  importDataFromJson: (jsonStr: string) => Promise<boolean>;
   
   // Toast & PWA
   toasts: ToastNotification[];
@@ -97,6 +98,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
   const [bikes, setBikes] = useState<Bike[]>([]);
   const [settings, setSettings] = useState<DealershipSettings>(initialDealershipSettings);
   const [isBusinessDataLoading, setIsBusinessDataLoading] = useState(true);
+  const [businessDataError, setBusinessDataError] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'inventory' | 'sales' | 'summary' | 'calculator' | 'settings'>('dashboard');
   
@@ -137,6 +139,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     setIsInvoiceModalOpen(false);
     setActiveTab('dashboard');
     setToasts([]);
+    setBusinessDataError(null);
     if (!user || !profile?.businessName.trim()) return;
 
     setIsBusinessDataLoading(true);
@@ -168,6 +171,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       },
       (error) => {
         console.error('Failed to load dealership records', error);
+        setBusinessDataError('Your saved inventory could not be loaded. Check your connection and Firebase security rules, then retry.');
         showToast('Data Could Not Load', 'Check your connection and Firebase security rules.', 'error');
         bikesLoaded = true;
         finishLoading();
@@ -184,6 +188,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       },
       (error) => {
         console.error('Failed to load dealership settings', error);
+        setBusinessDataError('Your saved dealership settings could not be loaded. Check your connection and Firebase security rules, then retry.');
         showToast('Settings Could Not Load', 'Check your connection and Firestore security rules.', 'error');
         settingsLoaded = true;
         finishLoading();
@@ -192,39 +197,126 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     void (async () => {
       try {
         const migrationRef = doc(db, 'users', user.uid, 'migration', 'legacy-v1');
-        if ((await getDoc(migrationRef)).exists()) return;
+        if (!(await getDoc(migrationRef)).exists()) {
+          const legacyBikes = await getDocs(query(
+            collection(db, 'bikes'),
+            where('ownerUid', '==', user.uid)
+          ));
+          const existingBikes = await getDocs(bikesCollection);
+          const existingIds = new Set(existingBikes.docs.map((bikeDoc) => bikeDoc.id));
+          const recordsToMigrate = legacyBikes.docs.filter((bikeDoc) => !existingIds.has(bikeDoc.id));
 
-        const legacyBikes = await getDocs(query(
-          collection(db, 'bikes'),
-          where('ownerUid', '==', user.uid)
-        ));
-        const existingBikes = await getDocs(bikesCollection);
-        const existingIds = new Set(existingBikes.docs.map((bikeDoc) => bikeDoc.id));
-        const recordsToMigrate = legacyBikes.docs.filter((bikeDoc) => !existingIds.has(bikeDoc.id));
-
-        for (let offset = 0; offset < recordsToMigrate.length; offset += 450) {
-          const batch = writeBatch(db);
-          recordsToMigrate.slice(offset, offset + 450).forEach((bikeDoc) => {
-            batch.set(doc(db, 'users', user.uid, 'bikes', bikeDoc.id), {
-              ...bikeDoc.data(),
-              id: bikeDoc.id,
-              ownerUid: user.uid
+          for (let offset = 0; offset < recordsToMigrate.length; offset += 450) {
+            const batch = writeBatch(db);
+            recordsToMigrate.slice(offset, offset + 450).forEach((bikeDoc) => {
+              batch.set(doc(db, 'users', user.uid, 'bikes', bikeDoc.id), {
+                ...bikeDoc.data(),
+                id: bikeDoc.id,
+                ownerUid: user.uid
+              });
             });
-          });
-          await batch.commit();
+            await batch.commit();
+          }
+
+          const legacySettings = await getDoc(doc(db, 'userSettings', user.uid));
+          const userSettingsRef = doc(db, 'users', user.uid, 'settings', 'preferences');
+          const existingSettings = await getDoc(userSettingsRef);
+          if (legacySettings.exists() && !existingSettings.exists()) {
+            await setDoc(userSettingsRef, {
+              ...legacySettings.data(),
+              dealershipName: profile.businessName
+            });
+          }
+
+          await setDoc(migrationRef, { completedAt: serverTimestamp() });
         }
 
-        const legacySettings = await getDoc(doc(db, 'userSettings', user.uid));
-        const userSettingsRef = doc(db, 'users', user.uid, 'settings', 'preferences');
-        const existingSettings = await getDoc(userSettingsRef);
-        if (legacySettings.exists() && !existingSettings.exists()) {
-          await setDoc(userSettingsRef, {
-            ...legacySettings.data(),
-            dealershipName: profile.businessName
-          });
-        }
+        const salesMigrationRef = doc(db, 'users', user.uid, 'migration', 'sales-v1');
+        if (!(await getDoc(salesMigrationRef)).exists()) {
+          const userBikes = await getDocs(bikesCollection);
+          const batchOperations: Array<{ ref: ReturnType<typeof doc>; data: Record<string, unknown> }> = [];
 
-        await setDoc(migrationRef, { completedAt: serverTimestamp() });
+          for (const bikeDocument of userBikes.docs) {
+            const bike = bikeDocument.data();
+            const sale = bike.sale;
+            if (!sale || typeof sale.id !== 'string') continue;
+
+            const customerId = typeof sale.customerId === 'string' ? sale.customerId : sale.id;
+            const saleWithCustomerId = { ...sale, customerId };
+            const customerRef = doc(db, 'users', user.uid, 'customers', customerId);
+            const saleRef = doc(db, 'users', user.uid, 'sales', sale.id);
+            const invoiceRef = doc(db, 'users', user.uid, 'invoices', sale.id);
+            const [customerSnapshot, saleSnapshot, invoiceSnapshot] = await Promise.all([
+              getDoc(customerRef),
+              getDoc(saleRef),
+              getDoc(invoiceRef)
+            ]);
+            const timestamp = serverTimestamp();
+            const customer = {
+              id: customerId,
+              ownerUid: user.uid,
+              name: sale.customerName || '',
+              phone: sale.customerPhone || '',
+              secondaryPhone: sale.customerSecondaryPhone || '',
+              email: sale.customerEmail || '',
+              idNumber: sale.customerIdNumber || '',
+              address: sale.customerAddress || '',
+              createdAt: timestamp,
+              updatedAt: timestamp,
+              saleIds: [sale.id]
+            };
+
+            if (!saleSnapshot.exists()) {
+              batchOperations.push({
+                ref: saleRef,
+                data: { ...saleWithCustomerId, ownerUid: user.uid, status: 'completed', createdAt: timestamp, updatedAt: timestamp }
+              });
+            }
+            if (!customerSnapshot.exists()) {
+              batchOperations.push({ ref: customerRef, data: customer });
+            }
+            if (!invoiceSnapshot.exists()) {
+              batchOperations.push({
+                ref: invoiceRef,
+                data: {
+                  id: sale.id,
+                  ownerUid: user.uid,
+                  saleId: sale.id,
+                  customerId,
+                  bikeId: bikeDocument.id,
+                  customer,
+                  vehicle: {
+                    id: bikeDocument.id,
+                    make: bike.make || '',
+                    model: bike.model || '',
+                    year: bike.year || 0,
+                    vehicleType: bike.vehicleType || 'Bike',
+                    registration: bike.regPlate || '',
+                    vin: bike.vin || '',
+                    imageUrl: bike.imageUrl || ''
+                  },
+                  sale: { ...saleWithCustomerId, ownerUid: user.uid },
+                  paymentStatus: sale.saleMethod === 'Cash' ? 'paid' : 'financed',
+                  createdAt: timestamp,
+                  updatedAt: timestamp
+                }
+              });
+            }
+            if (sale.customerId !== customerId) {
+              batchOperations.push({
+                ref: doc(db, 'users', user.uid, 'bikes', bikeDocument.id),
+                data: { sale: saleWithCustomerId, updatedAt: timestamp }
+              });
+            }
+          }
+
+          for (let offset = 0; offset < batchOperations.length; offset += 450) {
+            const batch = writeBatch(db);
+            batchOperations.slice(offset, offset + 450).forEach(({ ref, data }) => batch.set(ref, data, { merge: true }));
+            await batch.commit();
+          }
+          await setDoc(salesMigrationRef, { completedAt: serverTimestamp() });
+        }
       } catch (error) {
         console.error('Failed to migrate legacy dealership records', error);
         showToast('Migration Incomplete', 'Some older records could not be copied. Existing records were not deleted.', 'error');
@@ -287,15 +379,15 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const persistBike = (bike: Bike, isNew = false) => {
-    if (!user) return;
-    const ownedBike = { ...bike, ownerUid: bike.ownerUid || user.uid };
+  const saveBike = (bike: Bike, isNew = false): Promise<void> => {
+    if (!user) return Promise.reject(new Error('You must be signed in to save a vehicle.'));
+    const ownedBike = { ...bike, ownerUid: user.uid };
     const updatedBy = {
       updatedBy: user.uid,
       updatedByName: user.displayName || user.email?.split('@')[0] || user.uid,
       updatedByEmail: user.email || ''
     };
-    const write = isNew
+    return isNew
       ? setDoc(doc(db, 'users', user.uid, 'bikes', bike.id), {
           ...ownedBike,
           createdBy: user.uid,
@@ -314,35 +406,89 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
             ...updatedBy
           }, { merge: true });
         })();
-    void write.catch((error) => {
-      console.error('Failed to save dealership record', error);
-      showToast('Save Failed', 'Your changes could not be saved to the database.', 'error');
-    });
   };
 
-  const persistSettings = (nextSettings: DealershipSettings) => {
-    if (!user) return;
-    void setDoc(doc(db, 'users', user.uid, 'settings', 'preferences'), nextSettings).catch((error) => {
-      console.error('Failed to save dealership settings', error);
-      showToast('Settings Save Failed', 'Your settings could not be saved to the database.', 'error');
-    });
+  const persistSettings = (nextSettings: DealershipSettings): Promise<void> => {
+    if (!user) return Promise.reject(new Error('You must be signed in to save dealership settings.'));
+    return setDoc(doc(db, 'users', user.uid, 'settings', 'preferences'), nextSettings);
   };
 
-  const replaceVisibleBikes = (nextBikes: Bike[]) => {
-    if (!user) return;
+  const saveSaleDocuments = async (bike: Bike): Promise<Bike> => {
+    if (!user) throw new Error('You must be signed in to save sale documents.');
+    if (!bike.sale) return bike;
+    const customerId = bike.sale.customerId || doc(collection(db, 'users', user.uid, 'customers')).id;
+    const sale = { ...bike.sale, customerId, bikeId: bike.id };
+    const timestamp = serverTimestamp();
+    const customer = {
+      id: customerId,
+      ownerUid: user.uid,
+      name: sale.customerName,
+      phone: sale.customerPhone,
+      secondaryPhone: sale.customerSecondaryPhone || '',
+      email: sale.customerEmail || '',
+      idNumber: sale.customerIdNumber || '',
+      address: sale.customerAddress || '',
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      saleIds: [sale.id]
+    };
+    const batch = writeBatch(db);
+    batch.set(doc(db, 'users', user.uid, 'sales', sale.id), {
+      ...sale,
+      ownerUid: user.uid,
+      status: 'completed',
+      createdAt: timestamp,
+      updatedAt: timestamp
+    });
+    batch.set(doc(db, 'users', user.uid, 'customers', customerId), customer);
+    batch.set(doc(db, 'users', user.uid, 'invoices', sale.id), {
+      id: sale.id,
+      ownerUid: user.uid,
+      saleId: sale.id,
+      customerId,
+      bikeId: bike.id,
+      customer,
+      vehicle: {
+        id: bike.id,
+        make: bike.make,
+        model: bike.model,
+        year: bike.year,
+        vehicleType: bike.vehicleType || 'Bike',
+        registration: bike.regPlate,
+        vin: bike.vin,
+        imageUrl: bike.imageUrl
+      },
+      sale: { ...sale, ownerUid: user.uid },
+      paymentStatus: sale.saleMethod === 'Cash' ? 'paid' : 'financed',
+      createdAt: timestamp,
+      updatedAt: timestamp
+    });
+    await batch.commit();
+    return { ...bike, sale };
+  };
+
+  const replaceVisibleBikes = async (nextBikes: Bike[]) => {
+    if (!user) throw new Error('You must be signed in to replace dealership records.');
     const userBikes = bikes;
     const ownedNextBikes = nextBikes.map((bike) => ({ ...bike, ownerUid: user.uid }));
     const retainedIds = new Set(ownedNextBikes.map((bike) => bike.id));
-    for (const bike of userBikes) {
-      if (!retainedIds.has(bike.id)) {
-        void deleteDoc(doc(db, 'users', user.uid, 'bikes', bike.id)).catch((error) => {
-          console.error('Failed to remove dealership record', error);
-          showToast('Delete Failed', 'A record could not be removed from the database.', 'error');
-        });
-      }
-    }
-    setBikes(ownedNextBikes);
-    ownedNextBikes.forEach((bike) => persistBike(bike, true));
+    const removedBikes = userBikes.filter((bike) => !retainedIds.has(bike.id));
+    await Promise.all(
+      removedBikes.flatMap((bike) => [
+        deleteDoc(doc(db, 'users', user.uid, 'bikes', bike.id)),
+        ...(bike.sale ? [
+          deleteDoc(doc(db, 'users', user.uid, 'sales', bike.sale.id)),
+          deleteDoc(doc(db, 'users', user.uid, 'invoices', bike.sale.id)),
+          deleteDoc(doc(db, 'users', user.uid, 'customers', bike.sale.customerId || bike.sale.id))
+        ] : [])
+      ])
+    );
+    const savedBikes = await Promise.all(ownedNextBikes.map(async (bike) => {
+      const bikeWithSale = await saveSaleDocuments(bike);
+      await saveBike(bikeWithSale, true);
+      return bikeWithSale;
+    }));
+    setBikes(savedBikes);
   };
 
   const logout = () => {
@@ -374,7 +520,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const summary = useMemo(() => calculateFinancialSummary(bikes), [bikes]);
 
-  const addBike = (data: Partial<Bike>): Bike => {
+  const addBike = async (data: Partial<Bike>): Promise<Bike> => {
     if (!user) throw new Error('You must be signed in to add a vehicle.');
     const newId = doc(collection(db, 'users', user.uid, 'bikes')).id;
     const otherCosts: OtherCostItem[] = data.repairCosts || [];
@@ -414,8 +560,13 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       updatedAt: new Date().toISOString()
     };
 
+    try {
+      await saveBike(newBike, true);
+    } catch (error) {
+      console.error('Failed to save new dealership record', error);
+      throw new Error('Vehicle could not be saved. Check your connection and try again.');
+    }
     setBikes((prev) => [newBike, ...prev]);
-    persistBike(newBike, true);
     showToast(
       'Vehicle Saved',
       `${newBike.year} ${newBike.make} ${newBike.model} added to ${profile?.businessName || 'your business'}. Cost: ${formatCurrency(costPrice, settings.currencySymbol)} | Est. Profit: +${formatCurrency(estimatedProfit, settings.currencySymbol)}`,
@@ -424,9 +575,9 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     return newBike;
   };
 
-  const updateBike = (id: string, updates: Partial<Bike>) => {
+  const updateBike = async (id: string, updates: Partial<Bike>) => {
     const bike = bikes.find((item) => item.id === id);
-    if (!bike) return;
+    if (!bike) throw new Error('Vehicle not found.');
     const newCostPrice = updates.purchasePrice !== undefined ? Number(updates.purchasePrice) : bike.purchasePrice;
     const newOtherCosts = updates.repairCosts !== undefined ? updates.repairCosts : bike.repairCosts;
     const newTotalCost = calculateTotalCost(newCostPrice, newOtherCosts);
@@ -459,20 +610,26 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       };
     }
 
+    try {
+      await saveBike(updated);
+    } catch (error) {
+      console.error('Failed to update dealership record', error);
+      showToast('Save Failed', 'Your changes could not be saved to the database.', 'error');
+      throw error;
+    }
     setBikes((prev) => prev.map((item) => item.id === id ? updated : item));
-    persistBike(updated);
     showToast('Vehicle Updated', 'Cost price, other costs, and profit calculations updated.', 'success');
   };
 
   const deleteBike = async (id: string) => {
     const bikeToDelete = bikes.find((b) => b.id === id);
-    if (!user) return;
+    if (!user) throw new Error('You must be signed in to delete a vehicle.');
     try {
       await deleteDoc(doc(db, 'users', user.uid, 'bikes', id));
     } catch (error) {
       console.error('Failed to delete dealership record', error);
       showToast('Delete Failed', 'The record could not be removed from the database.', 'error');
-      return;
+      throw error;
     }
     if (selectedBike?.id === id) {
       setSelectedBike(null);
@@ -482,25 +639,86 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     showToast('Vehicle Deleted', `${bikeToDelete ? `${bikeToDelete.make} ${bikeToDelete.model}` : 'Bike'} removed.`, 'info');
   };
 
-  const recordSale = (bikeId: string, saleData: Omit<SaleRecord, 'id' | 'bikeId'>): SaleRecord => {
-    const saleId = `sale-${Date.now()}`;
+  const recordSale = async (bikeId: string, saleData: Omit<SaleRecord, 'id' | 'bikeId' | 'customerId'>): Promise<SaleRecord> => {
+    if (!user) throw new Error('You must be signed in to record a sale.');
+    const saleId = doc(collection(db, 'users', user.uid, 'sales')).id;
     const bike = bikes.find((b) => b.id === bikeId);
     if (!bike) throw new Error('Bike not found');
+    const customerId = doc(collection(db, 'users', user.uid, 'customers')).id;
 
     const definedSaleData = Object.fromEntries(
       Object.entries(saleData).filter(([, value]) => value !== undefined)
-    ) as Omit<SaleRecord, 'id' | 'bikeId'>;
+    ) as Omit<SaleRecord, 'id' | 'bikeId' | 'customerId'>;
     const newSale: SaleRecord = {
       ...definedSaleData,
       id: saleId,
       bikeId: bikeId,
+      customerId,
       vehicleType: saleData.vehicleType || bike.vehicleType || 'Bike',
       bikeSummary: `${bike.year} ${bike.make} ${bike.model}`
     };
 
     const updatedBike = { ...bike, status: 'Sold' as const, sale: newSale, updatedAt: new Date().toISOString() };
+    const timestamp = serverTimestamp();
+    const batch = writeBatch(db);
+    const bikeRef = doc(db, 'users', user.uid, 'bikes', bikeId);
+    const customerRef = doc(db, 'users', user.uid, 'customers', customerId);
+    const saleRef = doc(db, 'users', user.uid, 'sales', saleId);
+    const invoiceRef = doc(db, 'users', user.uid, 'invoices', saleId);
+    const customer = {
+      id: customerId,
+      ownerUid: user.uid,
+      name: newSale.customerName,
+      phone: newSale.customerPhone,
+      secondaryPhone: newSale.customerSecondaryPhone || '',
+      email: newSale.customerEmail || '',
+      idNumber: newSale.customerIdNumber || '',
+      address: newSale.customerAddress || '',
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      saleIds: [saleId]
+    };
+    const persistedSale = { ...newSale, ownerUid: user.uid, status: 'completed', createdAt: timestamp, updatedAt: timestamp };
+    const { createdAt, createdBy, createdByName, createdByEmail, ...bikeUpdates } = updatedBike;
+    batch.set(bikeRef, {
+      ...bikeUpdates,
+      ownerUid: user.uid,
+      updatedAt: timestamp,
+      updatedBy: user.uid,
+      sale: newSale
+    }, { merge: true });
+    batch.set(saleRef, persistedSale);
+    batch.set(customerRef, customer);
+    batch.set(invoiceRef, {
+      id: saleId,
+      ownerUid: user.uid,
+      saleId,
+      customerId,
+      bikeId,
+      customer,
+      vehicle: {
+        id: bike.id,
+        make: bike.make,
+        model: bike.model,
+        year: bike.year,
+        vehicleType: bike.vehicleType || 'Bike',
+        registration: bike.regPlate,
+        vin: bike.vin,
+        imageUrl: bike.imageUrl
+      },
+      sale: persistedSale,
+      paymentStatus: newSale.saleMethod === 'Cash' ? 'paid' : 'financed',
+      createdAt: timestamp,
+      updatedAt: timestamp
+    });
+    try {
+      await batch.commit();
+    } catch (error) {
+      console.error('Failed to save sale, customer, and invoice', error);
+      showToast('Sale Save Failed', 'The sale, customer, and invoice could not be saved to the database.', 'error');
+      throw new Error('The sale could not be saved. Check your connection and try again.');
+    }
     setBikes((prev) => prev.map((item) => item.id === bikeId ? updatedBike : item));
-    persistBike(updatedBike);
 
     const commissionNotice = newSale.saleMethod === 'Finance'
       ? ` Included 3% finance commission of ${formatCurrency(newSale.financeCommission, settings.currencySymbol)}.`
@@ -514,24 +732,53 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     return newSale;
   };
 
-  const revertSale = (bikeId: string) => {
+  const revertSale = async (bikeId: string) => {
     const bike = bikes.find((item) => item.id === bikeId);
-    if (!bike) return;
+    if (!bike) throw new Error('Vehicle not found.');
     const { sale, ...rest } = bike;
     const updatedBike = { ...rest, status: 'In Stock' as const, updatedAt: new Date().toISOString() };
+    if (!user) throw new Error('You must be signed in to revert a sale.');
+    const timestamp = serverTimestamp();
+    const batch = writeBatch(db);
+    const { createdAt, createdBy, createdByName, createdByEmail, ...bikeUpdates } = updatedBike;
+    batch.set(doc(db, 'users', user.uid, 'bikes', bikeId), {
+      ...bikeUpdates,
+      ownerUid: user.uid,
+      sale: deleteField(),
+      updatedAt: timestamp,
+      updatedBy: user.uid
+    }, { merge: true });
+    if (sale) {
+      batch.set(doc(db, 'users', user.uid, 'sales', sale.id), {
+        status: 'voided',
+        voidedAt: timestamp,
+        updatedAt: timestamp
+      }, { merge: true });
+      batch.set(doc(db, 'users', user.uid, 'invoices', sale.id), {
+        paymentStatus: 'voided',
+        voidedAt: timestamp,
+        updatedAt: timestamp
+      }, { merge: true });
+    }
+    try {
+      await batch.commit();
+    } catch (error) {
+      console.error('Failed to revert dealership sale', error);
+      showToast('Sale Reversal Failed', 'The sale could not be reverted in the database.', 'error');
+      throw error;
+    }
     setBikes((prev) => prev.map((item) => item.id === bikeId ? updatedBike : item));
-    persistBike(updatedBike);
     showToast('Sale Voided', 'Vehicle returned to In Stock inventory.', 'info');
   };
 
-  const addRepairItem = (bikeId: string, item: Omit<OtherCostItem, 'id'>) => {
-    if (!user) return;
+  const addRepairItem = async (bikeId: string, item: Omit<OtherCostItem, 'id'>) => {
+    if (!user) throw new Error('You must be signed in to add an expense.');
     const newOtherCost: OtherCostItem = {
       ...item,
       id: doc(collection(db, 'users', user.uid, 'bikes')).id
     };
     const bike = bikes.find((item) => item.id === bikeId);
-    if (!bike) return;
+    if (!bike) throw new Error('Vehicle not found.');
     const newOtherCosts = [...bike.repairCosts, newOtherCost];
     const updatedBike = {
       ...bike,
@@ -539,8 +786,14 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       totalCost: calculateTotalCost(bike.purchasePrice, newOtherCosts),
       updatedAt: new Date().toISOString()
     };
+    try {
+      await saveBike(updatedBike);
+    } catch (error) {
+      console.error('Failed to save dealership expense', error);
+      showToast('Save Failed', 'The expense could not be saved to the database.', 'error');
+      throw error;
+    }
     setBikes((prev) => prev.map((item) => item.id === bikeId ? updatedBike : item));
-    persistBike(updatedBike);
     showToast(
       'Other Cost Added',
       `Logged "${item.description}" (${formatCurrency(item.cost, settings.currencySymbol)}).`,
@@ -548,9 +801,9 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     );
   };
 
-  const removeRepairItem = (bikeId: string, repairId: string) => {
+  const removeRepairItem = async (bikeId: string, repairId: string) => {
     const bike = bikes.find((item) => item.id === bikeId);
-    if (!bike) return;
+    if (!bike) throw new Error('Vehicle not found.');
     const newOtherCosts = bike.repairCosts.filter((repair) => repair.id !== repairId);
     const updatedBike = {
       ...bike,
@@ -558,8 +811,14 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       totalCost: calculateTotalCost(bike.purchasePrice, newOtherCosts),
       updatedAt: new Date().toISOString()
     };
+    try {
+      await saveBike(updatedBike);
+    } catch (error) {
+      console.error('Failed to remove dealership expense', error);
+      showToast('Save Failed', 'The expense could not be removed from the database.', 'error');
+      throw error;
+    }
     setBikes((prev) => prev.map((item) => item.id === bikeId ? updatedBike : item));
-    persistBike(updatedBike);
     showToast('Expense Removed', 'Total cost and profit margin adjusted.', 'info');
   };
 
@@ -571,16 +830,22 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       } catch (error) {
         console.error('Failed to update business name', error);
         showToast('Business Name Save Failed', 'Your Business Name could not be updated.', 'error');
-        return;
+        throw error;
       }
     }
+    try {
+      await persistSettings(nextSettings);
+    } catch (error) {
+      console.error('Failed to save dealership settings', error);
+      showToast('Settings Save Failed', 'Your settings could not be saved to the database.', 'error');
+      throw error;
+    }
     setSettings(nextSettings);
-    persistSettings(nextSettings);
     showToast('Settings Saved', 'Business configuration updated.', 'success');
   };
 
-  const resetToDefaultData = () => {
-    if (!user) return;
+  const resetToDefaultData = async () => {
+    if (!user) throw new Error('You must be signed in to reset dealership data.');
     const newIds = new Map(sampleBikes.map((bike) => [bike.id, doc(collection(db, 'users', user.uid, 'bikes')).id]));
     const resetBikes = sampleBikes.map((bike) => ({
       ...bike,
@@ -588,16 +853,28 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
       ownerUid: user?.uid,
       sale: bike.sale ? { ...bike.sale, bikeId: newIds.get(bike.id)! } : undefined
     }));
-    replaceVisibleBikes(resetBikes);
-    const resetSettings = { ...initialDealershipSettings, dealershipName: profile?.businessName || '' };
-    setSettings(resetSettings);
-    persistSettings(resetSettings);
-    showToast('Reset Complete', 'Loaded realistic dealership sales records (Cars & Bikes).', 'info');
+    try {
+      await replaceVisibleBikes(resetBikes);
+      const resetSettings = { ...initialDealershipSettings, dealershipName: profile?.businessName || '' };
+      await persistSettings(resetSettings);
+      setSettings(resetSettings);
+      showToast('Reset Complete', 'Loaded realistic dealership sales records (Cars & Bikes).', 'info');
+    } catch (error) {
+      console.error('Failed to reset dealership data', error);
+      showToast('Reset Failed', 'Dealership data could not be fully saved. Please retry.', 'error');
+      throw error;
+    }
   };
 
-  const clearAllData = () => {
-    replaceVisibleBikes([]);
-    showToast('Data Cleared', 'All inventory vehicles and sales have been cleared.', 'info');
+  const clearAllData = async () => {
+    try {
+      await replaceVisibleBikes([]);
+      showToast('Data Cleared', 'All inventory vehicles and sales have been cleared.', 'info');
+    } catch (error) {
+      console.error('Failed to clear dealership data', error);
+      showToast('Clear Failed', 'Dealership data could not be fully cleared. Please retry.', 'error');
+      throw error;
+    }
   };
 
   const exportDataToJson = () => {
@@ -622,7 +899,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     showToast('Database Exported', 'Downloaded complete Sales POS JSON backup.', 'success');
   };
 
-  const importDataFromJson = (jsonStr: string): boolean => {
+  const importDataFromJson = async (jsonStr: string): Promise<boolean> => {
     try {
       const data = JSON.parse(jsonStr);
       if (Array.isArray(data.bikes)) {
@@ -634,17 +911,18 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
           ownerUid: user?.uid,
           sale: bike.sale ? { ...bike.sale, bikeId: importedIds.get(bike.id)! } : undefined
         }));
-        replaceVisibleBikes(importedBikes);
+        await replaceVisibleBikes(importedBikes);
         if (data.settings) {
           const importedSettings = { ...initialDealershipSettings, ...data.settings };
+          await persistSettings(importedSettings);
           setSettings(importedSettings);
-          persistSettings(importedSettings);
         }
         showToast('Backup Restored', `Restored ${data.bikes.length} vehicles from JSON.`, 'success');
         return true;
       }
       throw new Error('Invalid JSON structure');
     } catch (e) {
+      console.error('Failed to import dealership backup', e);
       showToast('Import Error', 'File is corrupted or has an invalid structure.', 'error');
       return false;
     }
@@ -682,6 +960,7 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
         settings,
         summary,
         isBusinessDataLoading,
+        businessDataError,
         activeTab,
         setActiveTab,
         selectedBike,

@@ -109,6 +109,7 @@ export const InventoryView: React.FC = () => {
   }, [visibleBikes, searchQuery, categoryFilter, statusFilter, ownerFilter, createdFrom, createdTo, sortBy, isAdmin]);
 
   const [bikeToDelete, setBikeToDelete] = useState<Bike | null>(null);
+  const [isDeletingBike, setIsDeletingBike] = useState(false);
 
   const categories = [
     'All',
@@ -116,10 +117,16 @@ export const InventoryView: React.FC = () => {
     'Manual'
   ];
 
-  const handleConfirmDelete = () => {
-    if (bikeToDelete) {
-      deleteBike(bikeToDelete.id);
+  const handleConfirmDelete = async () => {
+    if (!bikeToDelete || isDeletingBike) return;
+    setIsDeletingBike(true);
+    try {
+      await deleteBike(bikeToDelete.id);
       setBikeToDelete(null);
+    } catch {
+      // The dealership context reports persistence errors to the user.
+    } finally {
+      setIsDeletingBike(false);
     }
   };
 
@@ -709,6 +716,7 @@ export const InventoryView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setBikeToDelete(null)}
+                disabled={isDeletingBike}
                 className="px-4 py-2.5 min-h-[44px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors"
               >
                 Cancel
@@ -716,9 +724,10 @@ export const InventoryView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleConfirmDelete}
+                disabled={isDeletingBike}
                 className="px-5 py-2.5 min-h-[44px] rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black shadow-lg shadow-rose-600/25 transition-all active:scale-95"
               >
-                Delete Vehicle
+                {isDeletingBike ? 'Deleting...' : 'Delete Vehicle'}
               </button>
             </div>
           </div>

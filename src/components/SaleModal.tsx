@@ -66,6 +66,7 @@ export const SaleModal: React.FC = () => {
   const [financeTermMonths, setFinanceTermMonths] = useState<number>(36);
   const [notes, setNotes] = useState<string>('');
   const [formError, setFormError] = useState<string>('');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (activeBike) {
@@ -112,8 +113,9 @@ export const SaleModal: React.FC = () => {
     financeCommissionRate: 0.03
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSaving) return;
     setFormError('');
 
     if (!customerName.trim()) {
@@ -160,7 +162,9 @@ export const SaleModal: React.FC = () => {
       }
     }
 
-    const saleRecord = recordSale(activeBike.id, {
+    setIsSaving(true);
+    try {
+      const saleRecord = await recordSale(activeBike.id, {
       saleDate,
       saleMethod,
       saleAmount,
@@ -189,13 +193,18 @@ export const SaleModal: React.FC = () => {
       financeTermMonths: saleMethod === 'Finance' ? financeTermMonths : undefined,
       notes: notes.trim() || undefined,
       bikeSummary: `${activeBike.year} ${activeBike.make} ${activeBike.model}`
-    });
+      });
 
-    setIsSaleModalOpen(false);
+      setIsSaleModalOpen(false);
     
-    setTimeout(() => {
-      openInvoiceForSale(saleRecord);
-    }, 200);
+      setTimeout(() => {
+        openInvoiceForSale(saleRecord);
+      }, 200);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Sale could not be saved. Check your connection and try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -225,6 +234,7 @@ export const SaleModal: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsSaleModalOpen(false)}
+            disabled={isSaving}
             className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-sky-400"
             aria-label="Close sale modal"
           >
@@ -709,10 +719,11 @@ export const SaleModal: React.FC = () => {
 
             <button
               type="submit"
+              disabled={isSaving}
               className="flex-1 sm:flex-initial px-8 py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 transition-transform active:scale-95 flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-emerald-400"
             >
               <CheckCircle2 className="w-5 h-5 stroke-[2.5]" aria-hidden="true" />
-              <span>Finalize Sale & Generate Customer Document</span>
+              <span>{isSaving ? 'Saving...' : 'Finalize Sale & Generate Customer Document'}</span>
             </button>
           </div>
         </form>

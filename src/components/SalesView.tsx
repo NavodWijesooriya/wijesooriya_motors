@@ -37,6 +37,7 @@ export const SalesView: React.FC = () => {
   const [dateSort, setDateSort] = useState<'desc' | 'asc'>('desc');
   const [saleToRevert, setSaleToRevert] = useState<Bike | null>(null);
   const [ownerFilter, setOwnerFilter] = useState('All');
+  const [isRevertingSale, setIsRevertingSale] = useState(false);
 
   const symbol = settings.currencySymbol;
   const ownerOptions = useMemo(() => {
@@ -150,10 +151,16 @@ export const SalesView: React.FC = () => {
     document.body.removeChild(link);
   };
 
-  const handleConfirmRevert = () => {
-    if (saleToRevert) {
-      revertSale(saleToRevert.id);
+  const handleConfirmRevert = async () => {
+    if (!saleToRevert || isRevertingSale) return;
+    setIsRevertingSale(true);
+    try {
+      await revertSale(saleToRevert.id);
       setSaleToRevert(null);
+    } catch {
+      // The dealership context reports persistence errors to the user.
+    } finally {
+      setIsRevertingSale(false);
     }
   };
 
@@ -511,6 +518,7 @@ export const SalesView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSaleToRevert(null)}
+                disabled={isRevertingSale}
                 className="px-4 py-2.5 min-h-[44px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors"
               >
                 Keep Sale Record
@@ -518,9 +526,10 @@ export const SalesView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleConfirmRevert}
+                disabled={isRevertingSale}
                 className="px-5 py-2.5 min-h-[44px] rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 transition-all active:scale-95"
               >
-                Confirm Void Sale
+                {isRevertingSale ? 'Saving...' : 'Confirm Void Sale'}
               </button>
             </div>
           </div>

@@ -41,6 +41,7 @@ export const SettingsView: React.FC = () => {
   const [taxNumber, setTaxNumber] = useState(settings.taxNumber || '');
   const [currencySymbol, setCurrencySymbol] = useState(settings.currencySymbol);
   const [theme, setTheme] = useState<'dark' | 'light'>(settings.theme);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   useEffect(() => {
     setDealershipName(settings.dealershipName);
@@ -56,18 +57,26 @@ export const SettingsView: React.FC = () => {
   // Confirmation Modal for Clear All Data
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  const handleSaveSettings = (e: React.FormEvent) => {
+  const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateSettings({
-      dealershipName,
-      tagline,
-      address,
-      phone,
-      email,
-      taxNumber,
-      currencySymbol,
-      theme
-    });
+    if (isSavingSettings) return;
+    setIsSavingSettings(true);
+    try {
+      await updateSettings({
+        dealershipName,
+        tagline,
+        address,
+        phone,
+        email,
+        taxNumber,
+        currencySymbol,
+        theme
+      });
+    } catch {
+      // The dealership context reports persistence errors to the user.
+    } finally {
+      setIsSavingSettings(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -302,18 +311,19 @@ export const SettingsView: React.FC = () => {
         <div className="pt-2 flex justify-end">
           <button
             type="submit"
+            disabled={isSavingSettings}
             className="w-full sm:w-auto px-6 py-3 min-h-[44px] rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-sky-500/20 transition-transform active:scale-95 flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-sky-400"
           >
             <Check className="w-4 h-4 stroke-[3]" aria-hidden="true" />
-            <span>Save Dealership Settings</span>
+            <span>{isSavingSettings ? 'Saving...' : 'Save Dealership Settings'}</span>
           </button>
         </div>
       </form>
 
-      {/* Section 5: Database & Local Storage Management */}
+      {/* Section 5: Database Management */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-4 shadow-xl">
         <h2 className="text-sm font-black text-white uppercase tracking-wider">
-          Database & PWA Local Storage Management
+          Database & Cross-Device Sync
         </h2>
         <p className="text-xs text-slate-400">
           Your business inventory and sales data are synchronized securely with your account. You can export complete JSON backups or restore previous data anytime.
@@ -374,7 +384,7 @@ export const SettingsView: React.FC = () => {
                   Clear All Data?
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  This will erase all vehicle inventory and sales records from local storage.
+                  This will erase all vehicle inventory and sales records from your account's Firestore database.
                 </p>
               </div>
             </div>
@@ -394,8 +404,7 @@ export const SettingsView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  clearAllData();
-                  setShowClearConfirm(false);
+                  void clearAllData().then(() => setShowClearConfirm(false)).catch(() => undefined);
                 }}
                 className="px-5 py-2.5 min-h-[44px] rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs shadow-lg shadow-rose-600/30 transition-all active:scale-95"
               >

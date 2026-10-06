@@ -349,7 +349,7 @@ export const DashboardView: React.FC = () => {
             </button>
 
             <button
-              onClick={resetToDefaultData}
+              onClick={() => void resetToDefaultData().catch(() => undefined)}
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-sm border border-slate-700 transition-transform active:scale-95"
             >
               <RefreshCw className="w-4 h-4 text-sky-400" />

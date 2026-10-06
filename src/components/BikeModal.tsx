@@ -88,6 +88,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
   // Accessible Form Error Feedback (Replaces window.alert)
   const [formError, setFormError] = useState('');
   const [costError, setCostError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (isEdit && selectedBike) {
@@ -183,8 +184,9 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSaving) return;
     setFormError('');
 
     if (!model.trim()) {
@@ -204,28 +206,40 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
     const finalSalePrice = numSalePrice > 0 ? numSalePrice : Math.round(totalCost * 1.2);
 
     if (isEdit && selectedBike) {
-      updateBike(selectedBike.id, {
-        vehicleType,
-        make: make.trim(),
-        model: model.trim(),
-        year: Number(year) || new Date().getFullYear(),
-        category,
-        vin: vin.trim() || selectedBike.vin || `VIN-${Date.now().toString().slice(-8)}`,
-        regPlate: finalRegPlate,
-        mileage: Number(mileage) || 0,
-        color: color.trim() || 'Black',
-        engineCapacityCc: Number(engineCapacityCc) || 125,
-        condition,
-        purchasePrice: numCostPrice,
-        purchaseDate,
-        supplierOrSeller: supplierOrSeller.trim(),
-        targetSalePrice: finalSalePrice,
-        imageUrl: imageUrl.trim() || selectedBike.imageUrl || defaultImg,
-        notes: notes.trim(),
-        repairCosts: otherCosts
-      });
-    } else {
-      addBike({
+      setIsSaving(true);
+      try {
+        await updateBike(selectedBike.id, {
+          vehicleType,
+          make: make.trim(),
+          model: model.trim(),
+          year: Number(year) || new Date().getFullYear(),
+          category,
+          vin: vin.trim() || selectedBike.vin || `VIN-${Date.now().toString().slice(-8)}`,
+          regPlate: finalRegPlate,
+          mileage: Number(mileage) || 0,
+          color: color.trim() || 'Black',
+          engineCapacityCc: Number(engineCapacityCc) || 125,
+          condition,
+          purchasePrice: numCostPrice,
+          purchaseDate,
+          supplierOrSeller: supplierOrSeller.trim(),
+          targetSalePrice: finalSalePrice,
+          imageUrl: imageUrl.trim() || selectedBike.imageUrl || defaultImg,
+          notes: notes.trim(),
+          repairCosts: otherCosts
+        });
+        onClose();
+      } catch (error) {
+        setFormError(error instanceof Error ? error.message : 'Vehicle could not be saved. Check your connection and try again.');
+      } finally {
+        setIsSaving(false);
+      }
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await addBike({
         vehicleType,
         make: make.trim(),
         model: model.trim(),
@@ -246,9 +260,12 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
         repairCosts: otherCosts
       });
       setActiveTab('dashboard');
+      onClose();
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Vehicle could not be saved. Check your connection and try again.');
+    } finally {
+      setIsSaving(false);
     }
-
-    onClose();
   };
 
   return (
@@ -280,14 +297,16 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
             <button
               type="button"
               onClick={handleSubmit}
+              disabled={isSaving}
               className="hidden sm:flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-emerald-400"
             >
               <Check className="w-4 h-4 stroke-[3]" aria-hidden="true" />
-              <span>Save Vehicle</span>
+              <span>{isSaving ? 'Saving...' : 'Save Vehicle'}</span>
             </button>
             <button
               type="button"
               onClick={onClose}
+              disabled={isSaving}
               className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-sky-400"
               aria-label="Close vehicle dialog"
             >
@@ -862,10 +881,11 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
 
             <button
               type="submit"
+              disabled={isSaving}
               className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-8 py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 transition-all hover:scale-[1.01] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-emerald-400"
             >
               <Check className="w-5 h-5 stroke-[3]" aria-hidden="true" />
-              <span>{isEdit ? 'Save Changes' : 'Save Vehicle to Inventory'}</span>
+              <span>{isSaving ? 'Saving...' : isEdit ? 'Save Changes' : 'Save Vehicle to Inventory'}</span>
             </button>
           </div>
         </form>

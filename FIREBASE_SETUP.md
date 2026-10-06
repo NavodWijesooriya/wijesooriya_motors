@@ -21,17 +21,20 @@ Each account's profile and data live under its Authentication UID:
 users/{AUTH_UID}
 users/{AUTH_UID}/bikes/{bikeId}
 users/{AUTH_UID}/settings/preferences
-users/{AUTH_UID}/products/{productId}
 users/{AUTH_UID}/sales/{saleId}
+users/{AUTH_UID}/invoices/{invoiceId}
 users/{AUTH_UID}/customers/{customerId}
 users/{AUTH_UID}/expenses/{expenseId}
+users/{AUTH_UID}/products/{productId}
 ```
 
-Firestore rules authorize profile and business-data access only when the path UID matches `request.auth.uid`. The admin role does not grant access to other users' business records.
+The profile document stores account and business identity. Inventory vehicles and settings are stored in `bikes` and `settings/preferences`; sales, invoice snapshots, and customer snapshots are stored in their own subcollections under the same UID. Related sale and customer details are also retained on the vehicle sale record for existing screens and printed invoices. The Firebase client uses Firestore's persistent IndexedDB cache to retain data for offline PWA launches and synchronize changes with Firestore when connected; Firestore remains the source of truth across devices.
+
+Firestore rules authorize profile and business-data access only when the path UID matches `request.auth.uid`. All user data subcollections under `users/{AUTH_UID}` inherit the approved-account check, so the admin role does not grant access to other users' business records.
 Only admins can list user profiles, which lets the Settings approval queue show pending requests. Each request can be reviewed only once; decisions cannot be changed by the applicant or overwritten from the client.
 
 ## Existing Firestore records
 
-On sign-in, the app copies legacy `bikes` documents whose `ownerUid` matches the signed-in UID into that account's `users/{AUTH_UID}/bikes` collection. It copies the matching `userSettings/{AUTH_UID}` document into `users/{AUTH_UID}/settings/preferences` if that new settings document does not already exist. Migration keeps legacy records in place and never overwrites records already in the user's new collection. Legacy reads are owner-only and legacy writes are disabled by the rules.
+On sign-in, the app copies legacy `bikes` documents whose `ownerUid` matches the signed-in UID into that account's `users/{AUTH_UID}/bikes` collection. It copies the matching `userSettings/{AUTH_UID}` document into `users/{AUTH_UID}/settings/preferences` if that new settings document does not already exist. It also backfills separate sale, invoice, and customer snapshots from existing vehicle sale records without deleting or overwriting existing records. Migration keeps legacy records in place and never overwrites records already in the user's new collection. Legacy reads are owner-only and legacy writes are disabled by the rules.
 
 Legacy records without a verifiable `ownerUid` are deliberately not assigned automatically; review and migrate those with a trusted administrative process. Browser-only backups can still be restored from the account's Settings screen while signed in as the intended owner.
