@@ -230,7 +230,7 @@ export const SalesView: React.FC = () => {
             </span>
           </div>
           <div className="mt-auto pt-2 border-t border-slate-800/80 text-xs text-slate-400 min-h-[28px] flex items-center shrink-0">
-            Cost Prices + Other Expenses
+            Historical outflow across sold and in-stock vehicles
           </div>
         </div>
 

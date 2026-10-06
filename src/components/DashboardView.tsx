@@ -224,27 +224,27 @@ export const DashboardView: React.FC = () => {
           </div>
         </div>
 
-        {/* Total Cost Prices + Other Expenses */}
+        {/* Current In-Stock Inventory Cost */}
         <div className="rounded-2xl bg-slate-900/90 border border-slate-800 p-4 sm:p-5 flex flex-col justify-between h-full">
           <div className="flex items-center justify-between h-11 shrink-0">
             <div className="w-11 h-11 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400">
               <Coins className="w-5 h-5" aria-hidden="true" />
             </div>
             <span className="text-xs font-bold text-orange-300 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20">
-              Other Costs: +{formatCurrency(summary.totalRepairCost, symbol)}
+              In Stock: {summary.totalBikesInStock}
             </span>
           </div>
           <div className="mt-4 flex-1 flex flex-col justify-between">
             <div>
-              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Total Purchase & Costs</span>
+              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Current Inventory Cost</span>
               <div className="flex items-center mt-1 h-9">
                 <span className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight leading-none truncate">
-                  {formatCurrency(summary.totalPurchaseCost + summary.totalRepairCost, symbol)}
+                  {formatCurrency(summary.totalInventoryCost, symbol)}
                 </span>
               </div>
             </div>
             <div className="mt-auto pt-2.5 border-t border-slate-800/80 text-xs text-slate-400 font-mono min-h-[30px] flex items-center">
-              Cost Price: {formatCurrency(summary.totalPurchaseCost, symbol)}
+              Includes in-stock vehicles only; sold vehicles are excluded.
             </div>
           </div>
         </div>
