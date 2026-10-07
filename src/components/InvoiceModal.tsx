@@ -263,22 +263,38 @@ export const InvoiceModal: React.FC = () => {
         scrollY: 0
       });
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
-      const pageHeightPx = Math.floor(canvas.width * (297 / 210));
-      const pages = Math.ceil(canvas.height / pageHeightPx);
+      if (documentType === 'agreement') {
+        const scale = Math.min(210 / canvas.width, 297 / canvas.height);
+        const imageWidth = canvas.width * scale;
+        const imageHeight = canvas.height * scale;
+        pdf.addImage(
+          canvas.toDataURL('image/png'),
+          'PNG',
+          (210 - imageWidth) / 2,
+          (297 - imageHeight) / 2,
+          imageWidth,
+          imageHeight,
+          undefined,
+          'FAST'
+        );
+      } else {
+        const pageHeightPx = Math.floor(canvas.width * (297 / 210));
+        const pages = Math.ceil(canvas.height / pageHeightPx);
 
-      for (let page = 0; page < pages; page += 1) {
-        if (page > 0) pdf.addPage();
+        for (let page = 0; page < pages; page += 1) {
+          if (page > 0) pdf.addPage();
 
-        const startY = page * pageHeightPx;
-        const sliceHeight = Math.min(pageHeightPx, canvas.height - startY);
-        const pageCanvas = document.createElement('canvas');
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = sliceHeight;
-        const context = pageCanvas.getContext('2d');
-        if (!context) throw new Error('Could not prepare the PDF page image.');
+          const startY = page * pageHeightPx;
+          const sliceHeight = Math.min(pageHeightPx, canvas.height - startY);
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = sliceHeight;
+          const context = pageCanvas.getContext('2d');
+          if (!context) throw new Error('Could not prepare the PDF page image.');
 
-        context.drawImage(canvas, 0, startY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
-        pdf.addImage(pageCanvas.toDataURL('image/png'), 'PNG', 0, 0, 210, sliceHeight * (210 / canvas.width), undefined, 'FAST');
+          context.drawImage(canvas, 0, startY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+          pdf.addImage(pageCanvas.toDataURL('image/png'), 'PNG', 0, 0, 210, sliceHeight * (210 / canvas.width), undefined, 'FAST');
+        }
       }
 
       const safeDocumentNumber = documentNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
