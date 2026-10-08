@@ -845,6 +845,7 @@
   font-weight: 750;
   letter-spacing: -0.03em;
   line-height: 1.05;
+  overflow-wrap: anywhere;
 }
 
 .dashboard-welcome-copy .dashboard-welcome-description {
@@ -869,16 +870,6 @@
   width: 100%;
   height: 100%;
   overflow: visible;
-}
-
-.dashboard-business-name {
-  position: absolute;
-  right: 4px;
-  bottom: 9px;
-  margin: 0;
-  color: #4d9fe7;
-  font-size: 12px;
-  font-weight: 600;
 }
 
 .dashboard-shortcuts {
@@ -1211,12 +1202,6 @@
     right: -48px;
     width: 74%;
     opacity: .26;
-  }
-
-  .dashboard-business-name {
-    right: 1px;
-    bottom: 5px;
-    font-size: 10px;
   }
 
   .dashboard-shortcuts {

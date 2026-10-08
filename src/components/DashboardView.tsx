@@ -14,10 +14,7 @@ import { useDealership } from '../context/DealershipContext';
 
 export const DashboardView: React.FC = () => {
   const { setActiveTab, setIsAddBikeModalOpen } = useDealership();
-  const { user, profile } = useAuth();
-  const firstName = user?.displayName?.trim().split(/\s+/)[0]
-    || user?.email?.split('@')[0]
-    || 'there';
+  const { profile } = useAuth();
 
   const shortcuts = [
     {
@@ -83,7 +80,7 @@ export const DashboardView: React.FC = () => {
           <span className="dashboard-greeting-icon"><span aria-hidden="true">✦</span></span>
           <div>
             <p>Welcome back,</p>
-            <h1 id="dashboard-greeting">{firstName}</h1>
+            <h1 id="dashboard-greeting">{profile?.businessName || 'Your dealership'}</h1>
           </div>
           <p className="dashboard-welcome-description">
             Manage your vehicles, sales and dealership operations all in one place.
@@ -135,7 +132,6 @@ export const DashboardView: React.FC = () => {
             <circle cx="650" cy="126" r="6" fill="#8bd7ff" />
           </svg>
         </div>
-        <p className="dashboard-business-name">{profile?.businessName || 'Your dealership'}</p>
       </section>
 
       <section className="dashboard-shortcuts" aria-label="Dashboard shortcuts">
