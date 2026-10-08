@@ -348,7 +348,7 @@ export const InvoiceModal: React.FC = () => {
               type="button"
               onClick={handleDownload}
               disabled={isDownloading || !bike}
-              className="flex min-h-[44px] items-center gap-2 rounded-xl bg-emerald-400 px-4 py-2 text-xs font-black text-slate-950 transition-colors hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex min-h-[44px] items-center gap-2 rounded-xl bg-sky-400 px-4 py-2 text-xs font-black text-slate-950 transition-colors hover:bg-sky-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Download className="h-4 w-4" aria-hidden="true" />}
               <span>{isDownloading ? 'Generating PDF…' : `Download ${documentType === 'agreement' ? 'Agreement' : 'Bill'} PDF`}</span>
@@ -372,7 +372,7 @@ export const InvoiceModal: React.FC = () => {
           )}
           {downloadError && <p role="alert" className="mx-auto mb-3 max-w-[794px] text-sm text-rose-300">{downloadError}</p>}
           {downloaded && (
-            <p role="status" className="mx-auto mb-3 flex max-w-[794px] items-center gap-2 text-sm text-emerald-300">
+            <p role="status" className="mx-auto mb-3 flex max-w-[794px] items-center gap-2 text-sm text-sky-300">
               <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> Bill PDF downloaded.
             </p>
           )}

@@ -101,7 +101,7 @@ export const BikeDetailModal: React.FC = () => {
           <div className="relative z-10 p-4 flex items-center justify-between gap-2">
             <div className="flex flex-wrap gap-1.5 sm:gap-2">
               <span className={`px-3 py-1 rounded-full text-xs font-black tracking-wide shadow-lg ${
-                isSold ? 'bg-emerald-500 text-slate-950' : 'bg-sky-500 text-slate-950'
+                isSold ? 'bg-sky-500 text-slate-950' : 'bg-sky-500 text-slate-950'
               }`}>
                 {selectedBike.status.toUpperCase()}
               </span>
@@ -162,7 +162,7 @@ export const BikeDetailModal: React.FC = () => {
                     setIsDetailModalOpen(false);
                     openSaleModalForBike(selectedBike);
                   }}
-                  className="px-5 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-emerald-500/25 transition-transform active:scale-95 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-emerald-400"
+                  className="px-5 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-sky-500 to-sky-400 hover:from-sky-400 hover:to-sky-300 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-sky-500/25 transition-transform active:scale-95 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-sky-400"
                 >
                   Record Sale
                 </button>
@@ -173,7 +173,7 @@ export const BikeDetailModal: React.FC = () => {
                     setIsDetailModalOpen(false);
                     openInvoiceForSale(selectedBike.sale!);
                   }}
-                  className="px-5 py-2.5 min-h-[44px] rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold text-xs sm:text-sm border border-emerald-500/30 flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-emerald-400"
+                  className="px-5 py-2.5 min-h-[44px] rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold text-xs sm:text-sm border border-sky-500/30 flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-sky-400"
                 >
                   <Receipt className="w-4 h-4" aria-hidden="true" />
                   <span>View Bill of Sale</span>
@@ -230,7 +230,7 @@ export const BikeDetailModal: React.FC = () => {
           <div className="rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-slate-800 p-5 space-y-4 shadow-lg">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-black text-white flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-emerald-400" />
+                <DollarSign className="w-4 h-4 text-sky-400" />
                 Cost, Expense & Profit Statement (LKR)
               </h3>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono">
@@ -277,18 +277,18 @@ export const BikeDetailModal: React.FC = () => {
             </div>
 
             {/* Profit Result Card */}
-            <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-4 rounded-xl bg-sky-950/20 border border-sky-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                <span className="text-[10px] uppercase font-bold text-sky-400 tracking-wider">
                   {isSold ? 'Realized Net Profit' : 'Projected Profit'}
                 </span>
-                <div className="text-2xl font-black text-emerald-400 font-mono mt-0.5">
+                <div className="text-2xl font-black text-sky-400 font-mono mt-0.5">
                   +{formatCurrency(netProfit, symbol)}
                 </div>
               </div>
 
               <div className="text-right">
-                <div className="text-xs font-black text-emerald-300">
+                <div className="text-xs font-black text-sky-300">
                   {profitMarginPercent.toFixed(1)}% Profit Margin
                 </div>
                 <div className="text-[11px] text-slate-400 mt-0.5">
@@ -302,7 +302,7 @@ export const BikeDetailModal: React.FC = () => {
               <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-3">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <CheckCircle2 className="w-4 h-4 text-sky-400" />
                     <span className="font-bold text-white uppercase tracking-wider">
                       Sold via {selectedBike.sale.saleMethod} on {formatDate(selectedBike.sale.saleDate)}
                     </span>
@@ -342,7 +342,7 @@ export const BikeDetailModal: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowAddOtherCost(!showAddOtherCost)}
-                  className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-bold border border-amber-500/30 flex items-center gap-1 transition-colors"
+                  className="px-2.5 py-1 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-xs font-bold border border-sky-500/30 flex items-center gap-1 transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>{showAddOtherCost ? 'Close' : 'Add Other Cost'}</span>
@@ -399,7 +399,7 @@ export const BikeDetailModal: React.FC = () => {
                     <button
                       type="submit"
                       disabled={isSavingCost}
-                      className="w-full py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors"
+                      className="w-full py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition-colors"
                     >
                       {isSavingCost ? 'Saving...' : 'Save Cost'}
                     </button>

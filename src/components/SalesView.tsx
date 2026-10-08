@@ -170,7 +170,7 @@ export const SalesView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
-            Sales & <span className="text-emerald-400">Profit Ledger</span>
+            Sales & <span className="text-sky-400">Profit Ledger</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
             Reconcile Cash and Finance sales transactions, 3% finance commissions, and net profit margins.
@@ -185,7 +185,7 @@ export const SalesView: React.FC = () => {
               className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors border border-slate-700 focus-visible:ring-2 focus-visible:ring-sky-400"
               aria-label="Export sales ledger to CSV file"
             >
-              <FileSpreadsheet className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+              <FileSpreadsheet className="w-4 h-4 text-sky-400" aria-hidden="true" />
               <span>Export CSV</span>
             </button>
           )}
@@ -194,7 +194,7 @@ export const SalesView: React.FC = () => {
             <button
               type="button"
               onClick={() => openSaleModalForBike(bikes.find(b => b.status === 'In Stock')!)}
-              className="flex items-center gap-2 px-4 sm:px-5 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-emerald-500/25 transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-emerald-400"
+              className="flex items-center gap-2 px-4 sm:px-5 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-sky-500 to-sky-400 hover:from-sky-400 hover:to-sky-300 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-sky-500/25 transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-sky-400"
               aria-label="Record a vehicle sale"
             >
               <Plus className="w-4 h-4 stroke-[3]" aria-hidden="true" />
@@ -249,19 +249,19 @@ export const SalesView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-emerald-950/30 to-slate-900/90 border border-emerald-500/40 rounded-2xl p-4 shadow-sm flex flex-col justify-between h-full">
+        <div className="bg-gradient-to-br from-sky-950/30 to-slate-900/90 border border-sky-500/40 rounded-2xl p-4 shadow-sm flex flex-col justify-between h-full">
           <div className="h-6 flex items-center justify-between shrink-0">
-            <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider truncate">Total Net Profit</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold shrink-0">
+            <span className="text-[11px] font-bold text-sky-400 uppercase tracking-wider truncate">Total Net Profit</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-bold shrink-0">
               {displaySummary.averageProfitMarginPercent.toFixed(1)}%
             </span>
           </div>
           <div className="my-2 flex items-center h-8 shrink-0">
-            <span className="text-base sm:text-xl font-black text-emerald-400 font-mono tracking-tight leading-none truncate">
+            <span className="text-base sm:text-xl font-black text-sky-400 font-mono tracking-tight leading-none truncate">
               {formatCurrency(displaySummary.totalNetProfit, symbol)}
             </span>
           </div>
-          <div className="mt-auto pt-2 border-t border-slate-800/80 text-xs text-emerald-400/90 min-h-[28px] flex items-center shrink-0">
+          <div className="mt-auto pt-2 border-t border-slate-800/80 text-xs text-sky-400/90 min-h-[28px] flex items-center shrink-0">
             Net realized profit
           </div>
         </div>
@@ -347,7 +347,7 @@ export const SalesView: React.FC = () => {
                       <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
                         isFinance
                           ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                          : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                          : 'bg-sky-500/20 text-sky-300 border border-sky-500/40'
                       }`}>
                         {sale.saleMethod} SALE
                       </span>
@@ -434,11 +434,11 @@ export const SalesView: React.FC = () => {
                   </div>
 
                   <div className="col-span-2 sm:col-span-1">
-                    <div className="text-[10px] text-emerald-400 uppercase font-bold">Net Profit</div>
-                    <div className="text-base font-black text-emerald-400 mt-0.5 font-mono">
+                    <div className="text-[10px] text-sky-400 uppercase font-bold">Net Profit</div>
+                    <div className="text-base font-black text-sky-400 mt-0.5 font-mono">
                       +{formatCurrency(sale.netProfit, symbol)}
                     </div>
-                    <div className="text-[10px] text-emerald-500 font-semibold">
+                    <div className="text-[10px] text-sky-500 font-semibold">
                       {sale.profitMarginPercent.toFixed(1)}% margin
                     </div>
                   </div>
@@ -527,7 +527,7 @@ export const SalesView: React.FC = () => {
                 type="button"
                 onClick={handleConfirmRevert}
                 disabled={isRevertingSale}
-                className="px-5 py-2.5 min-h-[44px] rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 transition-all active:scale-95"
+                className="px-5 py-2.5 min-h-[44px] rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs shadow-lg shadow-sky-500/25 transition-all active:scale-95"
               >
                 {isRevertingSale ? 'Saving...' : 'Confirm Void Sale'}
               </button>

@@ -1,18 +1,37 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Roboto Variable", sans-serif;
+  --font-mono: "Roboto Variable", sans-serif;
+  --site-theme: #020617;
+  --site-theme-soft: #0f172a;
+  --site-theme-subtle: #17243a;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
+    background-color: var(--site-theme);
   }
 
   body {
-    background-color: #020617;
-    color: #f8fafc;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--site-theme);
+    background-image:
+      radial-gradient(ellipse at 8% 0%, rgb(0 180 255 / 0.12), transparent 34rem),
+      radial-gradient(ellipse at 92% 12%, rgb(0 110 255 / 0.1), transparent 30rem);
+    color: #f1f5f9;
+    font-family: "Roboto Variable", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
+  }
+
+  #root,
+  #root > div,
+  .app-shell {
+    background-color: var(--site-theme);
+    color: #f1f5f9;
   }
 
   /* Universal accessible keyboard focus ring */
@@ -28,6 +47,310 @@
     touch-action: manipulation;
     user-select: none;
   }
+}
+
+/* Keep utility-based screens aligned with the dealership's dark navy palette. */
+[class*="bg-slate-950"],
+[class*="bg-gray-950"],
+[class*="bg-zinc-950"],
+[class*="bg-neutral-950"],
+[class*="bg-slate-950/"],
+[class*="bg-gray-950/"],
+[class*="bg-zinc-950/"],
+[class*="bg-neutral-950/"] {
+  background-color: #020617 !important;
+}
+
+[class*="bg-slate-900"],
+[class*="bg-gray-900"],
+[class*="bg-zinc-900"],
+[class*="bg-neutral-900"],
+[class~="bg-white"] {
+  background-color: #0f172a !important;
+}
+
+[class*="bg-slate-800"],
+[class*="bg-gray-800"],
+[class*="bg-zinc-800"],
+[class*="bg-neutral-800"] {
+  background-color: #17243a !important;
+}
+
+[class*="bg-slate-700"],
+[class*="bg-gray-700"],
+[class*="bg-zinc-700"],
+[class*="bg-neutral-700"] {
+  background-color: #1e293b !important;
+}
+
+[class*="bg-slate-600"],
+[class*="bg-gray-600"],
+[class*="bg-zinc-600"],
+[class*="bg-neutral-600"] {
+  background-color: #334155 !important;
+}
+
+[class*="bg-slate-500"],
+[class*="bg-gray-500"],
+[class*="bg-zinc-500"],
+[class*="bg-neutral-500"] {
+  background-color: #475569 !important;
+}
+
+[class~="bg-slate-50"] {
+  background-color: var(--site-theme) !important;
+}
+
+[class~="bg-slate-100"],
+[class~="bg-gray-50"],
+[class~="bg-zinc-50"],
+[class~="bg-neutral-50"] {
+  background-color: #111c30 !important;
+}
+
+[class~="bg-sky-50"],
+[class~="bg-blue-50"],
+[class~="bg-cyan-50"],
+[class~="bg-teal-50"],
+[class~="bg-emerald-50"],
+[class~="bg-green-50"],
+[class~="bg-amber-50"],
+[class~="bg-yellow-50"],
+[class~="bg-rose-50"],
+[class~="bg-red-50"],
+[class~="bg-violet-50"],
+[class~="bg-indigo-50"],
+[class~="bg-purple-50"] {
+  background-color: rgb(14 116 144 / 0.16) !important;
+}
+
+[class*="bg-white/90"] {
+  background-color: rgb(15 23 42 / 0.9) !important;
+}
+
+[class*="bg-white/95"] {
+  background-color: rgb(15 23 42 / 0.95) !important;
+}
+
+[class*="bg-white/80"] {
+  background-color: rgb(15 23 42 / 0.8) !important;
+}
+
+[class*="bg-white/20"] {
+  background-color: rgb(248 250 252 / 0.2) !important;
+}
+
+[class*="bg-slate-950/85"] {
+  background-color: rgb(2 6 23 / 0.85) !important;
+}
+
+[class*="bg-slate-950/80"] {
+  background-color: rgb(2 6 23 / 0.8) !important;
+}
+
+[class*="bg-slate-950/70"] {
+  background-color: rgb(2 6 23 / 0.7) !important;
+}
+
+[class*="bg-slate-900/80"] {
+  background-color: rgb(15 23 42 / 0.8) !important;
+}
+
+[class*="border-white"],
+[class*="border-slate-200"],
+[class*="border-slate-100"],
+[class*="border-gray-200"],
+[class*="border-gray-100"] {
+  border-color: #1e293b !important;
+}
+
+[class*="border-slate-950"],
+[class*="border-slate-900"],
+[class*="border-slate-800"],
+[class*="border-slate-700"],
+[class*="border-slate-600"],
+[class*="border-slate-500"],
+[class*="border-gray-950"],
+[class*="border-gray-900"],
+[class*="border-gray-800"],
+[class*="border-gray-700"],
+[class*="border-zinc-900"],
+[class*="border-zinc-800"],
+[class*="border-neutral-900"],
+[class*="border-neutral-800"],
+[class*="border-neutral-700"] {
+  border-color: #26364e !important;
+}
+
+[class*="text-slate-50"],
+[class*="text-slate-100"],
+[class*="text-slate-200"],
+[class*="text-slate-300"],
+[class*="text-slate-400"],
+[class*="text-slate-500"],
+[class*="text-slate-600"],
+[class*="text-slate-700"],
+[class*="text-slate-800"],
+[class*="text-slate-900"],
+[class*="text-gray-50"],
+[class*="text-gray-100"],
+[class*="text-gray-200"],
+[class*="text-gray-300"],
+[class*="text-gray-400"],
+[class*="text-gray-500"],
+[class*="text-gray-600"],
+[class*="text-gray-700"],
+[class*="text-gray-800"],
+[class*="text-gray-900"],
+[class*="text-zinc-50"],
+[class*="text-zinc-100"],
+[class*="text-zinc-200"],
+[class*="text-zinc-300"],
+[class*="text-zinc-400"],
+[class*="text-zinc-500"],
+[class*="text-zinc-700"],
+[class*="text-zinc-800"],
+[class*="text-zinc-900"],
+[class*="text-neutral-50"],
+[class*="text-neutral-100"],
+[class*="text-neutral-200"],
+[class*="text-neutral-300"],
+[class*="text-neutral-400"],
+[class*="text-neutral-500"],
+[class*="text-neutral-600"],
+[class*="text-neutral-700"],
+[class*="text-neutral-800"],
+[class*="text-neutral-900"] {
+  color: #e2e8f0 !important;
+}
+
+[class*="divide-slate-800"] > :not(:last-child) {
+  border-color: #26364e !important;
+}
+
+[class*="text-slate-50"],
+[class*="text-slate-100"],
+[class*="text-slate-200"],
+[class*="text-slate-800"],
+[class*="text-slate-900"],
+[class*="text-gray-50"],
+[class*="text-gray-100"],
+[class*="text-gray-200"],
+[class*="text-gray-800"],
+[class*="text-gray-900"] {
+  color: #f1f5f9 !important;
+}
+
+[class*="text-slate-300"],
+[class*="text-slate-600"],
+[class*="text-slate-700"],
+[class*="text-gray-300"],
+[class*="text-gray-600"],
+[class*="text-gray-700"] {
+  color: #cbd5e1 !important;
+}
+
+[class*="text-slate-400"] {
+  color: #94a3b8 !important;
+}
+
+[class*="text-slate-500"],
+[class*="text-gray-400"],
+[class*="text-gray-500"] {
+  color: #94a3b8 !important;
+}
+
+[class*="text-sky-300"],
+[class*="text-sky-400"],
+[class*="text-sky-600"],
+[class*="text-sky-700"] {
+  color: #38bdf8 !important;
+}
+
+[class*="text-blue-300"],
+[class*="text-blue-400"],
+[class*="text-blue-600"],
+[class*="text-blue-700"] {
+  color: #60a5fa !important;
+}
+
+[class*="text-cyan-300"],
+[class*="text-cyan-400"],
+[class*="text-cyan-600"],
+[class*="text-cyan-700"] {
+  color: #22d3ee !important;
+}
+
+[class*="text-teal-300"],
+[class*="text-teal-400"],
+[class*="text-teal-600"],
+[class*="text-teal-700"],
+[class*="text-emerald-300"],
+[class*="text-emerald-400"],
+[class*="text-emerald-600"],
+[class*="text-emerald-700"],
+[class*="text-green-300"],
+[class*="text-green-400"],
+[class*="text-green-600"],
+[class*="text-green-700"] {
+  color: #00d09b !important;
+}
+
+[class*="text-amber-300"],
+[class*="text-amber-400"],
+[class*="text-yellow-300"],
+[class*="text-yellow-400"] {
+  color: #fbbf24 !important;
+}
+
+[class*="text-rose-300"],
+[class*="text-rose-400"],
+[class*="text-red-300"],
+[class*="text-red-400"] {
+  color: #fb7185 !important;
+}
+
+[class*="text-violet-300"],
+[class*="text-violet-400"],
+[class*="text-indigo-300"],
+[class*="text-indigo-400"] {
+  color: #a78bfa !important;
+}
+
+[class*="text-white"] {
+  color: #f8fafc !important;
+}
+
+[class*="from-white"] {
+  --tw-gradient-from: #111c30 var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(17 28 48 / 0) var(--tw-gradient-to-position) !important;
+}
+
+[class*="via-sky-50"] {
+  --tw-gradient-via: #0d2843 var(--tw-gradient-via-position) !important;
+  --tw-gradient-to: rgb(13 40 67 / 0) var(--tw-gradient-to-position) !important;
+}
+
+[class*="to-blue-50"] {
+  --tw-gradient-to: #0b2540 var(--tw-gradient-to-position) !important;
+}
+
+[class*="bg-gradient-to-r"][class*="from-sky-500"][class*="to-sky-400"][class*="text-slate-950"] {
+  --tw-gradient-from: #00c2f2 var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: #0866ff var(--tw-gradient-to-position) !important;
+}
+
+.header-add-vehicle {
+  background-image: linear-gradient(90deg, #0ea5e9, #2563eb) !important;
+  color: #ffffff !important;
+}
+
+.header-add-vehicle:hover {
+  background-image: linear-gradient(90deg, #38bdf8, #3b82f6) !important;
+}
+
+.header-add-vehicle svg {
+  color: #ffffff !important;
 }
 
 /* Safe area padding for modern notched devices */
@@ -180,8 +503,8 @@
   /* Ensure card backgrounds inside printable area are clean white or light gray */
   #printable-formal-letter [class*="bg-slate-"],
   #printable-bill-of-sale [class*="bg-slate-"],
-  #printable-formal-letter [class*="bg-emerald-"],
-  #printable-bill-of-sale [class*="bg-emerald-"],
+  #printable-formal-letter [class*="bg-sky-"],
+  #printable-bill-of-sale [class*="bg-sky-"],
   #printable-formal-letter [class*="bg-amber-"],
   #printable-bill-of-sale [class*="bg-amber-"] {
     background-color: #f8fafc !important;

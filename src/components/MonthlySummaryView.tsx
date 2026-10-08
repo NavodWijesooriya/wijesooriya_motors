@@ -189,19 +189,19 @@ export const MonthlySummaryView: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-800">
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-1.5">
-            <span className="px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-sky-500/20 to-emerald-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1.5 shadow-sm">
+            <span className="px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-sky-500/20 to-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1.5 shadow-sm">
               <Calendar className="w-3.5 h-3.5 text-sky-400" />
               Monthly Financial Operating Ledger
             </span>
 
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 flex items-center gap-1">
-              <Archive className="w-3 h-3 text-emerald-400" />
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/20 flex items-center gap-1">
+              <Archive className="w-3 h-3 text-sky-400" />
               Historical Records Retained
             </span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
-            Monthly Financial <span className="bg-gradient-to-r from-sky-400 to-emerald-300 bg-clip-text text-transparent">Summary & Reports</span>
+            Monthly Financial <span className="bg-gradient-to-r from-sky-400 to-sky-300 bg-clip-text text-transparent">Summary & Reports</span>
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl leading-relaxed">
@@ -227,13 +227,13 @@ export const MonthlySummaryView: React.FC = () => {
           <button
             type="button"
             onClick={() => setSubTab('simulator')}
-            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl text-xs sm:text-sm font-bold transition-all focus-visible:ring-2 focus-visible:ring-amber-400 ${
+            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl text-xs sm:text-sm font-bold transition-all focus-visible:ring-2 focus-visible:ring-sky-400 ${
               subTab === 'simulator'
-                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/25 font-black'
+                ? 'bg-gradient-to-r from-sky-500 to-sky-600 text-white shadow-lg shadow-sky-500/25 font-black'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >
-            <Calculator className="w-4 h-4 text-amber-400" aria-hidden="true" />
+            <Calculator className="w-4 h-4 text-sky-400" aria-hidden="true" />
             <span>3% Finance Sim</span>
           </button>
         </div>
@@ -381,7 +381,7 @@ export const MonthlySummaryView: React.FC = () => {
             
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-black text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
                 <span>{currentMonthSummary.monthLabel} Financial Summary (9 Key Metrics)</span>
               </h2>
               <span className="text-xs text-slate-500 font-mono">
@@ -422,7 +422,7 @@ export const MonthlySummaryView: React.FC = () => {
               <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between gap-2 h-8 shrink-0">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 truncate">Total Sales Revenue</span>
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                  <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center shrink-0 border border-sky-500/20">
                     <DollarSign className="w-4 h-4" aria-hidden="true" />
                   </div>
                 </div>
@@ -441,13 +441,13 @@ export const MonthlySummaryView: React.FC = () => {
               {/* Metric 3: Total Vehicle Costs */}
               <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between gap-2 h-8 shrink-0">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-orange-400 truncate">Total Vehicle Costs</span>
-                  <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center shrink-0 border border-orange-500/20">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-sky-400 truncate">Total Vehicle Costs</span>
+                  <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center shrink-0 border border-sky-500/20">
                     <Coins className="w-4 h-4" aria-hidden="true" />
                   </div>
                 </div>
                 <div className="my-3 flex items-center h-9 shrink-0">
-                  <span className="text-2xl sm:text-3xl font-black text-orange-400 font-mono tracking-tight leading-none truncate">
+                  <span className="text-2xl sm:text-3xl font-black text-sky-400 font-mono tracking-tight leading-none truncate">
                     {formatCurrency(currentMonthSummary.totalVehicleCost, symbol)}
                   </span>
                 </div>
@@ -507,14 +507,14 @@ export const MonthlySummaryView: React.FC = () => {
               </div>
 
               {/* Metric 5: Total Net Profit */}
-              <div className="rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/40 border border-emerald-500/30 p-5 shadow-xl flex flex-col justify-between h-full">
+              <div className="rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950/40 border border-sky-500/30 p-5 shadow-xl flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between h-8 shrink-0">
-                  <span className="text-xs font-black uppercase tracking-wider text-emerald-400">
+                  <span className="text-xs font-black uppercase tracking-wider text-sky-400">
                     Total Net Profit (Gross Profit − Expenses)
                   </span>
                   <span className={`text-xs font-bold px-2 py-0.5 rounded border font-mono shrink-0 ${
                     currentMonthSummary.netProfit >= 0
-                      ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
+                      ? 'bg-sky-500/10 text-sky-300 border-sky-500/20'
                       : 'bg-rose-500/10 text-rose-300 border-rose-500/20'
                   }`}>
                     {currentMonthSummary.netMarginPercent.toFixed(1)}% margin
@@ -522,7 +522,7 @@ export const MonthlySummaryView: React.FC = () => {
                 </div>
                 <div className="my-3 flex items-center h-10 shrink-0">
                   <span className={`text-3xl sm:text-4xl font-black font-mono tracking-tight leading-none truncate ${
-                    currentMonthSummary.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                    currentMonthSummary.netProfit >= 0 ? 'text-sky-400' : 'text-rose-400'
                   }`}>
                     {formatCurrency(currentMonthSummary.netProfit, symbol)}
                   </span>
@@ -611,7 +611,7 @@ export const MonthlySummaryView: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
               <div>
                 <h3 className="text-base font-black text-white flex items-center gap-2">
-                  <Receipt className="w-4 h-4 text-emerald-400" />
+                  <Receipt className="w-4 h-4 text-sky-400" />
                   <span>{currentMonthSummary.monthLabel} Sales Report & Ledger</span>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono">
                     {soldVehiclesInMonth.length} Record{soldVehiclesInMonth.length === 1 ? '' : 's'}
@@ -656,7 +656,7 @@ export const MonthlySummaryView: React.FC = () => {
                           </div>
 
                           <span className={`inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold shrink-0 ${
-                            isFinance ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                            isFinance ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
                           }`}>
                             {sale.saleMethod}
                           </span>
@@ -677,8 +677,8 @@ export const MonthlySummaryView: React.FC = () => {
                             <span className="text-white font-bold">{formatCurrency(sale.saleAmount, symbol)}</span>
                           </div>
                           <div>
-                            <span className="text-[10px] text-emerald-400 block uppercase font-bold">Net Profit</span>
-                            <span className="text-emerald-400 font-black">+{formatCurrency(sale.netProfit, symbol)}</span>
+                            <span className="text-[10px] text-sky-400 block uppercase font-bold">Net Profit</span>
+                            <span className="text-sky-400 font-black">+{formatCurrency(sale.netProfit, symbol)}</span>
                           </div>
                         </div>
 
@@ -712,9 +712,9 @@ export const MonthlySummaryView: React.FC = () => {
                         <th className="py-3 px-3">Payment Method</th>
                         <th className="py-3 px-3">Customer</th>
                         <th className="py-3 px-4 text-right">Sale Revenue</th>
-                        <th className="py-3 px-4 text-right text-orange-400">Vehicle Cost</th>
+                        <th className="py-3 px-4 text-right text-sky-400">Vehicle Cost</th>
                         <th className="py-3 px-4 text-right text-rose-400">Expenses</th>
-                        <th className="py-3 px-4 text-right text-emerald-400">Net Profit</th>
+                        <th className="py-3 px-4 text-right text-sky-400">Net Profit</th>
                         <th className="py-3 px-3 text-center">Customer Document</th>
                       </tr>
                     </thead>
@@ -745,7 +745,7 @@ export const MonthlySummaryView: React.FC = () => {
 
                             <td className="py-3.5 px-3">
                               <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
-                                isFinance ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                isFinance ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
                               }`}>
                                 {sale.saleMethod}
                                 {isFinance && sale.financeAmount ? ` (${formatCurrency(sale.financeAmount, symbol)})` : ''}
@@ -761,7 +761,7 @@ export const MonthlySummaryView: React.FC = () => {
                               {formatCurrency(sale.saleAmount, symbol)}
                             </td>
 
-                            <td className="py-3.5 px-4 text-right font-mono text-orange-400">
+                            <td className="py-3.5 px-4 text-right font-mono text-sky-400">
                               {formatCurrency(vehicleCost, symbol)}
                             </td>
 
@@ -769,7 +769,7 @@ export const MonthlySummaryView: React.FC = () => {
                               {formatCurrency(expenses, symbol)}
                             </td>
 
-                            <td className="py-3.5 px-4 text-right font-mono font-black text-emerald-400">
+                            <td className="py-3.5 px-4 text-right font-mono font-black text-sky-400">
                               +{formatCurrency(sale.netProfit, symbol)}
                             </td>
 
@@ -853,10 +853,10 @@ export const MonthlySummaryView: React.FC = () => {
                       <th className="py-3 px-4">Month / Year</th>
                       <th className="py-3 px-3 text-center">Vehicles Sold</th>
                       <th className="py-3 px-4 text-right">Sales Revenue</th>
-                      <th className="py-3 px-4 text-right text-orange-400">Vehicle Costs</th>
+                      <th className="py-3 px-4 text-right text-sky-400">Vehicle Costs</th>
                       <th className="py-3 px-4 text-right text-rose-400">Expenses</th>
                       <th className="py-3 px-4 text-right text-sky-400">Gross Profit</th>
-                      <th className="py-3 px-4 text-right text-emerald-400">Net Profit</th>
+                      <th className="py-3 px-4 text-right text-sky-400">Net Profit</th>
                       <th className="py-3 px-3 text-center">Net Margin</th>
                       <th className="py-3 px-3 text-center">Action</th>
                     </tr>
@@ -897,7 +897,7 @@ export const MonthlySummaryView: React.FC = () => {
                             {formatCurrency(m.totalSalesRevenue, symbol)}
                           </td>
 
-                          <td className="py-3.5 px-4 text-right font-mono text-orange-400">
+                          <td className="py-3.5 px-4 text-right font-mono text-sky-400">
                             {formatCurrency(m.totalVehicleCost, symbol)}
                           </td>
 
@@ -910,7 +910,7 @@ export const MonthlySummaryView: React.FC = () => {
                           </td>
 
                           <td className="py-3.5 px-4 text-right font-mono font-black text-sm">
-                            <span className={m.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                            <span className={m.netProfit >= 0 ? 'text-sky-400' : 'text-rose-400'}>
                               {formatCurrency(m.netProfit, symbol)}
                             </span>
                           </td>
@@ -918,7 +918,7 @@ export const MonthlySummaryView: React.FC = () => {
                           <td className="py-3.5 px-3 text-center font-mono">
                             <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
                               m.netMarginPercent > 0
-                                ? 'bg-emerald-500/20 text-emerald-300'
+                                ? 'bg-sky-500/20 text-sky-300'
                                 : m.netMarginPercent === 0
                                 ? 'bg-slate-800 text-slate-400'
                                 : 'bg-rose-500/20 text-rose-300'
@@ -953,10 +953,10 @@ export const MonthlySummaryView: React.FC = () => {
                       <td className="py-3.5 px-4 text-slate-200 uppercase font-black">All Retained Months</td>
                       <td className="py-3.5 px-3 text-center text-white font-black">{cumulativeHistoryTotals.totalVehiclesSold}</td>
                       <td className="py-3.5 px-4 text-right text-white font-black">{formatCurrency(cumulativeHistoryTotals.totalSalesRevenue, symbol)}</td>
-                      <td className="py-3.5 px-4 text-right text-orange-400">{formatCurrency(cumulativeHistoryTotals.totalVehicleCost, symbol)}</td>
+                      <td className="py-3.5 px-4 text-right text-sky-400">{formatCurrency(cumulativeHistoryTotals.totalVehicleCost, symbol)}</td>
                       <td className="py-3.5 px-4 text-right text-rose-400">{formatCurrency(cumulativeHistoryTotals.totalExpenses, symbol)}</td>
                       <td className="py-3.5 px-4 text-right text-sky-300">{formatCurrency(cumulativeHistoryTotals.grossProfit, symbol)}</td>
-                      <td className="py-3.5 px-4 text-right text-emerald-400 font-black">{formatCurrency(cumulativeHistoryTotals.netProfit, symbol)}</td>
+                      <td className="py-3.5 px-4 text-right text-sky-400 font-black">{formatCurrency(cumulativeHistoryTotals.netProfit, symbol)}</td>
                       <td className="py-3.5 px-3 text-center text-slate-300" colSpan={2}>
                         {cumulativeHistoryTotals.totalSalesRevenue > 0
                           ? `${((cumulativeHistoryTotals.netProfit / cumulativeHistoryTotals.totalSalesRevenue) * 100).toFixed(1)}% avg net`
@@ -999,16 +999,16 @@ export const MonthlySummaryView: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-4 text-xs font-mono">
                           <div>Revenue: <strong className="text-white">{formatCurrency(m.totalSalesRevenue, symbol)}</strong></div>
-                          <div>Profit: <strong className="text-emerald-400 font-black">{formatCurrency(m.netProfit, symbol)}</strong></div>
+                          <div>Profit: <strong className="text-sky-400 font-black">{formatCurrency(m.netProfit, symbol)}</strong></div>
                         </div>
                       </div>
 
                       {hasSales && (
                         <div className="mt-3">
                           <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden flex">
-                            <div style={{ width: `${costPct}%` }} className="bg-orange-500/80" title={`Cost: ${costPct}%`} />
+                            <div style={{ width: `${costPct}%` }} className="bg-sky-500/80" title={`Cost: ${costPct}%`} />
                             <div style={{ width: `${expPct}%` }} className="bg-rose-500/80" title={`Expenses: ${expPct}%`} />
-                            <div style={{ width: `${netPct}%` }} className="bg-emerald-400" title={`Net Profit: ${netPct}%`} />
+                            <div style={{ width: `${netPct}%` }} className="bg-sky-400" title={`Net Profit: ${netPct}%`} />
                           </div>
                           <div className="flex items-center justify-between text-[10px] text-slate-500 mt-1 font-mono">
                             <span>Cost: {costPct}%</span>
@@ -1151,7 +1151,7 @@ export const MonthlySummaryView: React.FC = () => {
                     </div>
                     <div className="flex justify-between text-slate-400">
                       <span>Total Cost:</span>
-                      <span className="text-orange-400">-{formatCurrency(simCashResult.totalCost, symbol)}</span>
+                      <span className="text-sky-400">-{formatCurrency(simCashResult.totalCost, symbol)}</span>
                     </div>
                     <div className="flex justify-between text-slate-400">
                       <span>Finance Comm:</span>
@@ -1160,7 +1160,7 @@ export const MonthlySummaryView: React.FC = () => {
                   </div>
                   <div className="pt-3 border-t border-slate-800 text-center">
                     <div className="text-[10px] uppercase font-bold text-slate-400">Cash Net Profit</div>
-                    <div className="text-xl font-black text-emerald-400 font-mono mt-0.5">
+                    <div className="text-xl font-black text-sky-400 font-mono mt-0.5">
                       +{formatCurrency(simCashResult.netProfit, symbol)}
                     </div>
                     <div className="text-[10px] text-slate-500 font-mono mt-0.5">
@@ -1184,7 +1184,7 @@ export const MonthlySummaryView: React.FC = () => {
                     </div>
                     <div className="flex justify-between text-slate-400">
                       <span>Total Cost:</span>
-                      <span className="text-orange-400">-{formatCurrency(simFinanceResult.totalCost, symbol)}</span>
+                      <span className="text-sky-400">-{formatCurrency(simFinanceResult.totalCost, symbol)}</span>
                     </div>
                     <div className="flex justify-between text-slate-400">
                       <span>3% Commission:</span>

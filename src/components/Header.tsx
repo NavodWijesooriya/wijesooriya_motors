@@ -38,12 +38,12 @@ export const Header: React.FC = () => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'inventory', label: 'Bikes Inventory', icon: Warehouse, count: summary.totalBikesInStock },
-    { id: 'sales', label: 'Sales & Commissions', icon: ReceiptText, count: summary.totalBikesSold },
+    { id: 'sales', label: 'Sales & Commissions', icon: ReceiptText },
     { id: 'summary', label: 'Summary', icon: BarChart3 },
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 text-slate-100 transition-colors">
+    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 text-slate-900 shadow-[0_8px_28px_-22px_rgba(15,23,42,0.4)] backdrop-blur-xl transition-colors">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20 gap-2">
           
@@ -55,7 +55,7 @@ export const Header: React.FC = () => {
             aria-label="Sales POS Dashboard Home"
           >
             <div className="relative flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-sky-600 via-cyan-500 to-amber-400 p-[2px] shadow-lg shadow-sky-500/20 shrink-0">
-              <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+              <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
                 <BikeIcon className="w-5 h-5 sm:w-6 sm:h-6 text-sky-400 transform -rotate-12 transition-transform hover:scale-110" aria-hidden="true" />
               </div>
               <span className="absolute -top-1 -right-1 flex h-3 w-3" aria-hidden="true">
@@ -80,7 +80,7 @@ export const Header: React.FC = () => {
           </button>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-900/60 p-1.5 rounded-xl border border-slate-800" aria-label="Main Navigation">
+          <nav className="hidden md:flex items-center gap-1 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800/80 shadow-inner" aria-label="Main Navigation">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -91,7 +91,7 @@ export const Header: React.FC = () => {
                   className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 min-h-[40px] ${
                     isActive
                       ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-md shadow-sky-500/25 font-bold'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
+                      : 'text-slate-300 hover:text-white hover:bg-white/10 hover:shadow-sm'
                   }`}
                   aria-current={isActive ? 'page' : undefined}
                 >
@@ -114,11 +114,11 @@ export const Header: React.FC = () => {
             {isPWAInstallable && (
               <button
                 onClick={installPWA}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 text-xs font-bold transition-all shadow-sm"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-sky-500/20 text-sky-300 border border-sky-500/40 hover:bg-sky-500/30 text-xs font-bold transition-all shadow-sm"
                 title="Install Sales POS to Home Screen"
                 aria-label="Install app to home screen"
               >
-                <Download className="w-4 h-4 text-amber-400" aria-hidden="true" />
+                <Download className="w-4 h-4 text-sky-400" aria-hidden="true" />
                 <span>Install</span>
               </button>
             )}
@@ -126,25 +126,25 @@ export const Header: React.FC = () => {
             <div 
               className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold border min-h-[36px] ${
                 isOnline 
-                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30' 
+                  ? 'bg-sky-500/10 text-sky-300 border-sky-500/30'
                   : 'bg-rose-500/10 text-rose-300 border-rose-500/30 animate-pulse'
               }`}
               title={isOnline ? 'Online - Local storage synced' : 'Offline Mode active'}
               role="status"
               aria-label={isOnline ? 'Online status: Connected' : 'Offline status: Offline mode'}
             >
-              {isOnline ? <Wifi className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" /> : <WifiOff className="w-3.5 h-3.5 text-rose-400" aria-hidden="true" />}
+              {isOnline ? <Wifi className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" /> : <WifiOff className="w-3.5 h-3.5 text-rose-400" aria-hidden="true" />}
               <span className="hidden xl:inline">{isOnline ? 'Ready' : 'Offline'}</span>
             </div>
 
             {/* Quick Add Vehicle CTA */}
             <button
               onClick={() => setIsAddBikeModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-emerald-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="header-add-vehicle flex items-center gap-1.5 px-3 sm:px-3.5 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-sky-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
               aria-label="Add new vehicle to inventory"
             >
-              <PlusCircle className="w-4 h-4 text-slate-950 shrink-0" aria-hidden="true" />
-              <span>Add Bike</span>
+              <PlusCircle className="w-4 h-4 text-white shrink-0" aria-hidden="true" />
+              <span>Add Vehicle</span>
             </button>
 
             {/* Desktop Settings & User Lockup */}
@@ -230,11 +230,11 @@ export const Header: React.FC = () => {
               <div 
                 className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold border ${
                   isOnline 
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
+                    ? 'bg-sky-500/10 text-sky-400 border-sky-500/30'
                     : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
                 }`}
               >
-                {isOnline ? <Wifi className="w-3 h-3 text-emerald-400" /> : <WifiOff className="w-3 h-3 text-rose-400" />}
+                {isOnline ? <Wifi className="w-3 h-3 text-sky-400" /> : <WifiOff className="w-3 h-3 text-rose-400" />}
                 <span>{isOnline ? 'Online' : 'Offline'}</span>
               </div>
             </div>
@@ -273,9 +273,9 @@ export const Header: React.FC = () => {
                   installPWA();
                   setIsMobileMenuOpen(false);
                 }}
-                className="w-full flex items-center justify-center gap-2 p-3 min-h-[44px] rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold"
+                className="w-full flex items-center justify-center gap-2 p-3 min-h-[44px] rounded-xl bg-sky-500/20 text-sky-300 border border-sky-500/40 text-xs font-bold"
               >
-                <Download className="w-4 h-4 text-amber-400" aria-hidden="true" />
+                <Download className="w-4 h-4 text-sky-400" aria-hidden="true" />
                 <span>Install Dealership App to Phone</span>
               </button>
             )}

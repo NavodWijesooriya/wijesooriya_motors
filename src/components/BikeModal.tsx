@@ -302,7 +302,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
               type="button"
               onClick={handleSubmit}
               disabled={isSaving}
-              className="hidden sm:flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-emerald-400"
+              className="hidden sm:flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-sky-500 to-sky-400 hover:from-sky-400 hover:to-sky-300 text-slate-950 font-black text-xs shadow-md shadow-sky-500/20 transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-sky-400"
             >
               <Check className="w-4 h-4 stroke-[3]" aria-hidden="true" />
               <span>{isSaving ? 'Saving...' : 'Save Vehicle'}</span>
@@ -592,10 +592,10 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
           <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 sm:p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px] font-bold">2</span>
+                <span className="w-5 h-5 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center text-[10px] font-bold">2</span>
                 Cost Price & Target Selling Price
               </h3>
-              <span className="text-[11px] text-emerald-400 font-bold">Base Financials</span>
+              <span className="text-[11px] text-sky-400 font-bold">Base Financials</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -617,7 +617,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
                     placeholder="e.g. 750000"
                     value={costPrice}
                     onChange={(e) => setCostPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-12 pr-3 py-2.5 text-sm text-white font-mono font-black outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-12 pr-3 py-2.5 text-sm text-white font-mono font-black outline-none focus:border-sky-500"
                   />
                 </div>
                 <div className="text-[10px] text-slate-400 mt-1.5 flex justify-between">
@@ -687,9 +687,9 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
                       type="button"
                       onClick={() => handleQuickCategorySelect(cat.category)}
                       aria-pressed={isSelected}
-                      className={`flex items-center gap-1.5 px-3 py-2 min-h-[38px] rounded-xl text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-amber-400 ${
+                      className={`flex items-center gap-1.5 px-3 py-2 min-h-[38px] rounded-xl text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-sky-400 ${
                         isSelected 
-                          ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                          ? 'bg-sky-500 text-slate-950 font-bold shadow-sm'
                           : 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800'
                       }`}
                     >
@@ -751,7 +751,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
                 <button
                   type="button"
                   onClick={handleAddOtherCost}
-                  className="w-full py-2.5 px-3 min-h-[44px] rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm active:scale-95 focus-visible:ring-2 focus-visible:ring-amber-400"
+                  className="w-full py-2.5 px-3 min-h-[44px] rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm active:scale-95 focus-visible:ring-2 focus-visible:ring-sky-400"
                 >
                   <Plus className="w-4 h-4 stroke-[3]" aria-hidden="true" />
                   <span>Add Expense</span>
@@ -802,7 +802,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
           <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-slate-800 shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
+                <TrendingUp className="w-4 h-4 text-sky-400" />
                 Profit & Cost Calculation Feature
               </h3>
               <span className="text-[10px] text-slate-400">Live Breakdown</span>
@@ -842,7 +842,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
             {/* Calculated Profit Badge */}
             <div className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
               isProfitable 
-                ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-200' 
+                ? 'bg-sky-950/30 border-sky-500/40 text-sky-200'
                 : isBreakEven
                 ? 'bg-slate-900 border-slate-700 text-slate-300'
                 : 'bg-rose-950/30 border-rose-500/40 text-rose-200'
@@ -852,7 +852,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
                   {isProfitable ? 'Projected Net Profit' : isBreakEven ? 'Break Even' : 'Projected Deficit'}
                 </span>
                 <div className="text-xl sm:text-2xl font-black mt-0.5 font-mono flex items-baseline gap-2">
-                  <span className={isProfitable ? 'text-emerald-400' : isBreakEven ? 'text-white' : 'text-rose-400'}>
+                  <span className={isProfitable ? 'text-sky-400' : isBreakEven ? 'text-white' : 'text-rose-400'}>
                     {isProfitable ? '+' : ''}{formatCurrency(netProfit, symbol)}
                   </span>
                   {numSalePrice > 0 && (
@@ -886,7 +886,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
             <button
               type="submit"
               disabled={isSaving}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-8 py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 transition-all hover:scale-[1.01] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-emerald-400"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-8 py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-sky-500 to-sky-400 hover:from-sky-400 hover:to-sky-300 text-slate-950 font-black text-sm shadow-xl shadow-sky-500/25 transition-all hover:scale-[1.01] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-sky-400"
             >
               <Check className="w-5 h-5 stroke-[3]" aria-hidden="true" />
               <span>{isSaving ? 'Saving...' : isEdit ? 'Save Changes' : 'Save Vehicle to Inventory'}</span>

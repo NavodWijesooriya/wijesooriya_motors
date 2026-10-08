@@ -131,7 +131,7 @@ export const ApprovalRequests: React.FC = () => {
                   type="button"
                   disabled={processingUid !== null}
                   onClick={() => void reviewRequest(request.id, 'approved')}
-                  className="flex min-h-10 items-center justify-center gap-1.5 rounded-lg bg-emerald-500 px-3 text-xs font-bold text-slate-950 transition-colors hover:bg-emerald-400 disabled:opacity-50"
+                  className="flex min-h-10 items-center justify-center gap-1.5 rounded-lg bg-sky-500 px-3 text-xs font-bold text-slate-950 transition-colors hover:bg-sky-400 disabled:opacity-50"
                 >
                   <Check className="h-3.5 w-3.5" aria-hidden="true" />
                   Approve

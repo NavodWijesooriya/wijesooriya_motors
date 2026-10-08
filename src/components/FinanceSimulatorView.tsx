@@ -269,13 +269,13 @@ export const FinanceSimulatorView: React.FC = () => {
           </div>
 
           {/* Advantage Banner */}
-          <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-amber-950/40 border border-emerald-500/40 flex items-center justify-between gap-4">
+          <div className="p-4 rounded-xl bg-gradient-to-r from-sky-950/40 via-slate-900 to-amber-950/40 border border-sky-500/40 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
                 <TrendingUp className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">
+                <span className="text-[11px] font-bold text-sky-400 uppercase tracking-wider">
                   Finance Deal Bonus
                 </span>
                 <div className="text-sm font-black text-white">

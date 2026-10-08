@@ -13,7 +13,7 @@ export const MobileNav: React.FC = () => {
 
   return (
     <nav 
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800 px-2 py-1.5 pb-safe shadow-2xl"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 px-2 py-1.5 pb-safe shadow-[0_-12px_36px_-18px_rgba(15,23,42,0.3)]"
       aria-label="Mobile Navigation"
       role="navigation"
     >
@@ -56,10 +56,10 @@ export const MobileNav: React.FC = () => {
           className="flex flex-col items-center justify-center -mt-6 min-h-[48px] px-2 focus-visible:outline-none"
           aria-label="Add new vehicle to inventory"
         >
-          <div className="w-13 h-13 rounded-full bg-gradient-to-tr from-emerald-500 via-teal-400 to-sky-400 flex items-center justify-center shadow-xl shadow-emerald-500/35 active:scale-95 transition-transform border-4 border-slate-950">
+          <div className="w-13 h-13 rounded-full bg-gradient-to-tr from-sky-500 via-sky-400 to-sky-400 flex items-center justify-center shadow-xl shadow-sky-500/35 active:scale-95 transition-transform border-4 border-slate-950">
             <PlusCircle className="w-7 h-7 text-slate-950 stroke-[2.75]" aria-hidden="true" />
           </div>
-          <span className="text-[11px] font-black text-emerald-400 mt-0.5">Add</span>
+          <span className="text-[11px] font-black text-sky-400 mt-0.5">Add</span>
         </button>
 
         <button
@@ -69,15 +69,10 @@ export const MobileNav: React.FC = () => {
             activeTab === 'sales' ? 'text-sky-400 font-bold' : 'text-slate-300 hover:text-white'
           }`}
           aria-current={activeTab === 'sales' ? 'page' : undefined}
-          aria-label={`Sales & Commissions (${summary.totalBikesSold} sold)`}
+          aria-label="Sales & Commissions"
         >
           <ReceiptText className={`w-5 h-5 ${activeTab === 'sales' ? 'stroke-[2.5]' : ''}`} aria-hidden="true" />
           <span className="text-[11px] tracking-tight mt-0.5">Sales</span>
-          {summary.totalBikesSold > 0 && (
-            <span className="absolute top-1 right-2 min-w-[16px] h-4 px-1 bg-emerald-500 text-slate-950 rounded-full text-[9px] font-black flex items-center justify-center tabular-nums shadow-sm">
-              {summary.totalBikesSold}
-            </span>
-          )}
         </button>
 
         <button

@@ -19,14 +19,14 @@ export const ToastContainer: React.FC = () => {
             key={toast.id}
             className={`pointer-events-auto flex items-start gap-3 p-3.5 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 transform translate-y-0 opacity-100 ${
               isSuccess
-                ? 'bg-slate-900/95 border-emerald-500/40 text-emerald-300'
+                ? 'bg-slate-900/95 border-sky-500/40 text-sky-300'
                 : isError
                 ? 'bg-slate-900/95 border-rose-500/40 text-rose-300'
                 : 'bg-slate-900/95 border-sky-500/40 text-sky-300'
             }`}
           >
             <div className={`p-1 rounded-lg shrink-0 ${
-              isSuccess ? 'bg-emerald-500/20 text-emerald-400' : isError ? 'bg-rose-500/20 text-rose-400' : 'bg-sky-500/20 text-sky-400'
+              isSuccess ? 'bg-sky-500/20 text-sky-400' : isError ? 'bg-rose-500/20 text-rose-400' : 'bg-sky-500/20 text-sky-400'
             }`}>
               <Icon className="w-4 h-4" />
             </div>

@@ -170,7 +170,7 @@ export const InventoryView: React.FC = () => {
 
           <button
             onClick={() => setIsAddBikeModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-emerald-500/25 transition-transform active:scale-95"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-sky-400 hover:from-sky-400 hover:to-sky-300 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-sky-500/25 transition-transform active:scale-95"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>Add Vehicle</span>
@@ -270,7 +270,7 @@ export const InventoryView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab('sales')}
-                className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1 min-h-[32px] rounded-full border border-emerald-500/30 transition-colors font-medium"
+                className="inline-flex items-center gap-1.5 text-xs text-sky-400 hover:text-sky-300 bg-sky-500/10 hover:bg-sky-500/20 px-3 py-1 min-h-[32px] rounded-full border border-sky-500/30 transition-colors font-medium"
                 title="View sold vehicles in the Sales Ledger and Monthly Summary"
               >
                 <span>🔒 {soldCount} sold vehicle{soldCount === 1 ? '' : 's'} archived in Sales</span>
@@ -327,7 +327,7 @@ export const InventoryView: React.FC = () => {
                   <div className="absolute top-3 left-3 flex items-center gap-1.5">
                     <span className={`px-2.5 py-1 rounded-full text-[11px] font-black tracking-wide shadow-md ${
                       isSold 
-                        ? 'bg-emerald-500 text-slate-950' 
+                        ? 'bg-sky-500 text-slate-950'
                         : 'bg-sky-500 text-slate-950'
                     }`}>
                       {bike.status.toUpperCase()}
@@ -342,7 +342,7 @@ export const InventoryView: React.FC = () => {
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-black border shadow-md ${
                         bike.sale.saleMethod === 'Finance'
                           ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 backdrop-blur-md'
-                          : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 backdrop-blur-md'
+                          : 'bg-sky-500/20 text-sky-300 border-sky-500/40 backdrop-blur-md'
                       }`}>
                         {bike.sale.saleMethod.toUpperCase()} SALE
                       </span>
@@ -413,10 +413,10 @@ export const InventoryView: React.FC = () => {
                           </div>
                         )}
                         <div className="flex justify-between items-center font-black pt-1 border-t border-slate-800/60">
-                          <span className="text-emerald-400 flex items-center gap-1">
+                          <span className="text-sky-400 flex items-center gap-1">
                             <TrendingUp className="w-3 h-3" /> Realized Profit:
                           </span>
-                          <span className="text-emerald-400 font-mono">{formatCurrency(bike.sale.netProfit, symbol)}</span>
+                          <span className="text-sky-400 font-mono">{formatCurrency(bike.sale.netProfit, symbol)}</span>
                         </div>
                       </div>
                     ) : (
@@ -426,10 +426,10 @@ export const InventoryView: React.FC = () => {
                           <span className="font-black text-sky-400 font-mono">{formatCurrency(targetPrice, symbol)}</span>
                         </div>
                         <div className="flex justify-between items-center text-[11px] font-black pt-1 border-t border-slate-800/60">
-                          <span className="text-emerald-400 flex items-center gap-1">
+                          <span className="text-sky-400 flex items-center gap-1">
                             <TrendingUp className="w-3 h-3" /> Target Profit:
                           </span>
-                          <span className="text-emerald-400 font-mono">
+                          <span className="text-sky-400 font-mono">
                             +{formatCurrency(potentialProfit, symbol)} ({potentialMargin.toFixed(0)}%)
                           </span>
                         </div>
@@ -453,7 +453,7 @@ export const InventoryView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => openSaleModalForBike(bike)}
-                        className="flex-1 py-2.5 px-3 min-h-[44px] rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black transition-all shadow-md shadow-emerald-500/20 flex items-center justify-center gap-1.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-emerald-400"
+                        className="flex-1 py-2.5 px-3 min-h-[44px] rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-black transition-all shadow-md shadow-sky-500/20 flex items-center justify-center gap-1.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-sky-400"
                         aria-label={`Record sale for ${bike.make} ${bike.model}`}
                       >
                         <DollarSign className="w-4 h-4 stroke-[3]" aria-hidden="true" />
@@ -463,11 +463,11 @@ export const InventoryView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => openInvoiceForSale(bike.sale!)}
-                        className="flex-1 py-2.5 px-3 min-h-[44px] rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 focus-visible:ring-2 focus-visible:ring-emerald-400"
+                        className="flex-1 py-2.5 px-3 min-h-[44px] rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 focus-visible:ring-2 focus-visible:ring-sky-400"
                         title="Print / View Invoice"
                         aria-label={`View invoice for ${bike.make} ${bike.model}`}
                       >
-                        <Receipt className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+                        <Receipt className="w-4 h-4 text-sky-400" aria-hidden="true" />
                         <span>Invoice</span>
                       </button>
                     )}
@@ -542,7 +542,7 @@ export const InventoryView: React.FC = () => {
 
                       <td className="py-3.5 px-4">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          isSold ? 'bg-emerald-500/20 text-emerald-300' : 'bg-sky-500/20 text-sky-400'
+                          isSold ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-500/20 text-sky-400'
                         }`}>
                           {bike.status}
                         </span>
@@ -564,7 +564,7 @@ export const InventoryView: React.FC = () => {
                         {isSold && bike.sale ? formatCurrency(bike.sale.saleAmount, symbol) : formatCurrency(bike.targetSalePrice, symbol)}
                       </td>
 
-                      <td className="py-3.5 px-4 text-right font-mono font-black text-emerald-400">
+                      <td className="py-3.5 px-4 text-right font-mono font-black text-sky-400">
                         +{formatCurrency(netProfit, symbol)}
                       </td>
 
@@ -584,7 +584,7 @@ export const InventoryView: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => openSaleModalForBike(bike)}
-                              className="px-3 py-1.5 min-h-[38px] rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-sm flex items-center justify-center focus-visible:ring-2 focus-visible:ring-emerald-400"
+                              className="px-3 py-1.5 min-h-[38px] rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs shadow-sm flex items-center justify-center focus-visible:ring-2 focus-visible:ring-sky-400"
                               aria-label={`Sell ${bike.make} ${bike.model}`}
                             >
                               Sell
@@ -593,7 +593,7 @@ export const InventoryView: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => openInvoiceForSale(bike.sale!)}
-                              className="p-2 min-h-[38px] min-w-[38px] flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-400"
+                              className="p-2 min-h-[38px] min-w-[38px] flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-400 focus-visible:ring-2 focus-visible:ring-sky-400"
                               title="Invoice"
                               aria-label={`View invoice for ${bike.make} ${bike.model}`}
                             >
@@ -634,7 +634,7 @@ export const InventoryView: React.FC = () => {
       {/* Empty State */}
       {filteredBikes.length === 0 && (
         <div className="text-center py-16 bg-slate-900/50 rounded-2xl border border-dashed border-slate-800 p-8 space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-sky-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mx-auto">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-500/20 to-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400 mx-auto">
             <BikeIcon className="w-8 h-8" />
           </div>
 
@@ -647,7 +647,7 @@ export const InventoryView: React.FC = () => {
               <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                 <button
                   onClick={() => setIsAddBikeModalOpen(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/25 transition-transform active:scale-95"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-sky-400 hover:from-sky-400 hover:to-sky-300 text-slate-950 font-black text-xs shadow-lg shadow-sky-500/25 transition-transform active:scale-95"
                 >
                   <Plus className="w-4 h-4 stroke-[3]" />
                   <span>Add New Vehicle</span>
@@ -673,7 +673,7 @@ export const InventoryView: React.FC = () => {
               <div className="mt-4 flex justify-center">
                 <button
                   onClick={() => setIsAddBikeModalOpen(true)}
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 transition-transform active:scale-95"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-sky-400 hover:from-sky-400 hover:to-sky-300 text-slate-950 font-black text-sm shadow-xl shadow-sky-500/25 transition-transform active:scale-95"
                 >
                   <Plus className="w-4 h-4 stroke-[3]" />
                   <span>Add Vehicle</span>

@@ -32,7 +32,7 @@ export const LoadingScreen: React.FC = () => {
             <p className="mt-6 text-lg font-semibold text-white">Loading...</p>
             <p className="mt-2 text-sm text-slate-400">Syncing account profile and business data</p>
 
-            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-300">
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-sky-300">
               <ShieldCheck className="h-3.5 w-3.5" />
               Secure access
             </div>

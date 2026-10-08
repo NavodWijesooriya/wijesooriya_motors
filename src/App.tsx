@@ -48,7 +48,7 @@ const MainLayout: React.FC = () => {
   if (isBusinessDataLoading) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-sky-500 selection:text-slate-950 transition-colors print:bg-white print:text-black print:min-h-0">
+    <div className="app-shell min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-sky-200 selection:text-slate-950 transition-colors print:bg-white print:text-black print:min-h-0">
       
       {/* PWA Banner */}
       <div className="print:hidden">
@@ -91,7 +91,7 @@ const MainLayout: React.FC = () => {
       </div>
 
       {/* Desktop Footer */}
-      <footer className="hidden md:block border-t border-slate-900 bg-slate-950/80 py-6 text-xs text-slate-500 print:hidden">
+      <footer className="hidden md:block border-t border-slate-200 bg-white/80 py-6 text-xs text-slate-500 shadow-[0_-8px_30px_-28px_rgba(15,23,42,0.35)] print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="font-black text-slate-300 flex items-center gap-1">
@@ -104,8 +104,6 @@ const MainLayout: React.FC = () => {
 
           <div className="flex items-center gap-4 text-slate-400">
             <span>Showroom: {summary.totalBikesInStock} in stock</span>
-            <span>•</span>
-            <span>Closed Deals: {summary.totalBikesSold}</span>
             <span>•</span>
             <span>3% Finance Commission Active</span>
           </div>

@@ -122,7 +122,7 @@ export const SettingsView: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
           <div>
             <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <ShieldCheck className="w-4 h-4 text-sky-400" />
               Firebase Account
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -239,7 +239,7 @@ export const SettingsView: React.FC = () => {
         {/* Section 3: Currency & Commission */}
         <div className="space-y-4 pt-4 border-t border-slate-800">
           <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+            <DollarSign className="w-4 h-4 text-sky-400" aria-hidden="true" />
             Currency & Commission Rules
           </h2>
 
@@ -344,7 +344,7 @@ export const SettingsView: React.FC = () => {
             onClick={() => fileInputRef.current?.click()}
             className="flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors border border-slate-700 focus-visible:ring-2 focus-visible:ring-sky-400"
           >
-            <Upload className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+            <Upload className="w-4 h-4 text-sky-400" aria-hidden="true" />
             <span>Restore Backup from JSON</span>
           </button>
           <input

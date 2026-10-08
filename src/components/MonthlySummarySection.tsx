@@ -136,7 +136,7 @@ export const MonthlySummarySection: React.FC = () => {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 pb-6 border-b border-slate-800">
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className="px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-sky-500/20 to-emerald-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1.5 shadow-sm">
+            <span className="px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-sky-500/20 to-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1.5 shadow-sm">
               <Calendar className="w-3.5 h-3.5 text-sky-400" />
               Monthly Summary & Internal P&L
             </span>
@@ -262,7 +262,7 @@ export const MonthlySummarySection: React.FC = () => {
         {/* Section Title */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span className="w-2 h-2 rounded-full bg-sky-400"></span>
             <h3 className="text-sm font-black text-slate-200 uppercase tracking-wider">
               {currentMonthSummary.monthLabel} Metric Definitions
             </h3>
@@ -305,7 +305,7 @@ export const MonthlySummarySection: React.FC = () => {
           <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition-all shadow-md flex flex-col justify-between h-full">
             <div className="flex items-center justify-between gap-2 h-8 shrink-0">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 truncate">Total Sales Revenue</span>
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
+              <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center shrink-0 border border-sky-500/20">
                 <DollarSign className="w-4 h-4" aria-hidden="true" />
               </div>
             </div>
@@ -324,13 +324,13 @@ export const MonthlySummarySection: React.FC = () => {
           {/* Metric 3: Total Vehicle Cost */}
           <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition-all shadow-md flex flex-col justify-between h-full">
             <div className="flex items-center justify-between gap-2 h-8 shrink-0">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-orange-400 truncate">Total Vehicle Cost</span>
-              <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center shrink-0 border border-orange-500/20">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-sky-400 truncate">Total Vehicle Cost</span>
+              <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center shrink-0 border border-sky-500/20">
                 <Coins className="w-4 h-4" aria-hidden="true" />
               </div>
             </div>
             <div className="my-3 flex items-center h-9 shrink-0">
-              <span className="text-2xl sm:text-3xl font-black text-orange-400 font-mono tracking-tight leading-none truncate">
+              <span className="text-2xl sm:text-3xl font-black text-sky-400 font-mono tracking-tight leading-none truncate">
                 {formatCurrency(currentMonthSummary.totalVehicleCost, symbol)}
               </span>
             </div>
@@ -399,10 +399,10 @@ export const MonthlySummarySection: React.FC = () => {
           </div>
 
           {/* Metric 8: Net Profit (Gross Profit − Total Expenses) */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/40 border border-emerald-500/30 p-5 shadow-xl flex flex-col justify-between h-full">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950/40 border border-sky-500/30 p-5 shadow-xl flex flex-col justify-between h-full">
             <div className="flex items-center justify-between h-8 shrink-0">
               <div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-sky-500/20 text-sky-300 border border-sky-500/30">
                   Net Profit Metric
                 </span>
                 <h4 className="text-lg font-black text-white mt-1">
@@ -412,7 +412,7 @@ export const MonthlySummarySection: React.FC = () => {
               <div className="text-right">
                 <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
                   currentMonthSummary.netProfit >= 0
-                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
+                    ? 'bg-sky-500/10 text-sky-300 border-sky-500/20'
                     : 'bg-rose-500/10 text-rose-300 border-rose-500/20'
                 }`}>
                   Margin: {currentMonthSummary.netMarginPercent.toFixed(1)}%
@@ -422,7 +422,7 @@ export const MonthlySummarySection: React.FC = () => {
 
             <div className="my-3 flex items-center h-10 shrink-0">
               <span className={`text-3xl sm:text-4xl font-black font-mono tracking-tight leading-none truncate ${
-                currentMonthSummary.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                currentMonthSummary.netProfit >= 0 ? 'text-sky-400' : 'text-rose-400'
               }`}>
                 {formatCurrency(currentMonthSummary.netProfit, symbol)}
               </span>
@@ -616,7 +616,7 @@ export const MonthlySummarySection: React.FC = () => {
                       </div>
                       <div>
                         <span className="text-slate-400">Net: </span>
-                        <strong className={m.netProfit >= 0 ? 'text-emerald-400 font-black' : 'text-rose-400 font-black'}>
+                        <strong className={m.netProfit >= 0 ? 'text-sky-400 font-black' : 'text-rose-400 font-black'}>
                           {formatCurrency(m.netProfit, symbol)}
                         </strong>
                       </div>
@@ -632,8 +632,8 @@ export const MonthlySummarySection: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <div className="text-[10px] uppercase text-orange-400/80 font-bold">2. Vehicle Costs</div>
-                      <div className="text-sm font-bold text-orange-400 font-mono mt-0.5">
+                      <div className="text-[10px] uppercase text-sky-400/80 font-bold">2. Vehicle Costs</div>
+                      <div className="text-sm font-bold text-sky-400 font-mono mt-0.5">
                         {formatCurrency(m.totalVehicleCost, symbol)}
                       </div>
                     </div>
@@ -650,9 +650,9 @@ export const MonthlySummarySection: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <div className="text-[10px] uppercase text-emerald-400 font-black">5. Net Profit</div>
+                      <div className="text-[10px] uppercase text-sky-400 font-black">5. Net Profit</div>
                       <div className={`text-sm font-black font-mono mt-0.5 ${
-                        m.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                        m.netProfit >= 0 ? 'text-sky-400' : 'text-rose-400'
                       }`}>
                         {formatCurrency(m.netProfit, symbol)}
                       </div>
@@ -666,7 +666,7 @@ export const MonthlySummarySection: React.FC = () => {
                         <div
                           style={{ width: `${costPct}%` }}
                           title={`Vehicle Cost: ${costPct}%`}
-                          className="bg-orange-500/80 transition-all"
+                          className="bg-sky-500/80 transition-all"
                         />
                         <div
                           style={{ width: `${expPct}%` }}
@@ -676,18 +676,18 @@ export const MonthlySummarySection: React.FC = () => {
                         <div
                           style={{ width: `${netPct}%` }}
                           title={`Net Profit: ${netPct}%`}
-                          className="bg-emerald-400 transition-all"
+                          className="bg-sky-400 transition-all"
                         />
                       </div>
                       <div className="flex items-center justify-between text-[10px] text-slate-500 mt-1 font-mono">
                         <span className="flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Cost: {costPct}%
+                          <span className="w-1.5 h-1.5 rounded-full bg-sky-500"></span> Cost: {costPct}%
                         </span>
                         <span className="flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Expenses: {expPct}%
                         </span>
                         <span className="flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Net Profit: {netPct}%
+                          <span className="w-1.5 h-1.5 rounded-full bg-sky-400"></span> Net Profit: {netPct}%
                         </span>
                       </div>
                     </div>
@@ -707,10 +707,10 @@ export const MonthlySummarySection: React.FC = () => {
                   <th className="py-3 px-4">Period</th>
                   <th className="py-3 px-3 text-center">Vehicles</th>
                   <th className="py-3 px-4 text-right">Sales Revenue</th>
-                  <th className="py-3 px-4 text-right text-orange-400">Vehicle Costs</th>
+                  <th className="py-3 px-4 text-right text-sky-400">Vehicle Costs</th>
                   <th className="py-3 px-4 text-right text-rose-400">Expenses</th>
                   <th className="py-3 px-4 text-right text-sky-400">Gross Profit</th>
-                  <th className="py-3 px-4 text-right text-emerald-400">Net Profit</th>
+                  <th className="py-3 px-4 text-right text-sky-400">Net Profit</th>
                   <th className="py-3 px-3 text-center">Net Margin</th>
                   <th className="py-3 px-3 text-center">Action</th>
                 </tr>
@@ -749,7 +749,7 @@ export const MonthlySummarySection: React.FC = () => {
                         {formatCurrency(m.totalSalesRevenue, symbol)}
                       </td>
 
-                      <td className="py-3 px-4 text-right font-mono text-orange-400">
+                      <td className="py-3 px-4 text-right font-mono text-sky-400">
                         {formatCurrency(m.totalVehicleCost, symbol)}
                       </td>
 
@@ -762,7 +762,7 @@ export const MonthlySummarySection: React.FC = () => {
                       </td>
 
                       <td className="py-3 px-4 text-right font-mono font-black">
-                        <span className={m.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                        <span className={m.netProfit >= 0 ? 'text-sky-400' : 'text-rose-400'}>
                           {formatCurrency(m.netProfit, symbol)}
                         </span>
                       </td>
@@ -770,7 +770,7 @@ export const MonthlySummarySection: React.FC = () => {
                       <td className="py-3 px-3 text-center font-mono">
                         <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
                           m.netMarginPercent > 0
-                            ? 'bg-emerald-500/20 text-emerald-300'
+                            ? 'bg-sky-500/20 text-sky-300'
                             : m.netMarginPercent === 0
                             ? 'bg-slate-800 text-slate-400'
                             : 'bg-rose-500/20 text-rose-300'
@@ -805,10 +805,10 @@ export const MonthlySummarySection: React.FC = () => {
                   <td className="py-3 px-4 text-slate-300 uppercase">Cumulative Totals</td>
                   <td className="py-3 px-3 text-center text-white font-black">{comparisonTotals.totalVehiclesSold}</td>
                   <td className="py-3 px-4 text-right text-white font-black">{formatCurrency(comparisonTotals.totalSalesRevenue, symbol)}</td>
-                  <td className="py-3 px-4 text-right text-orange-400">{formatCurrency(comparisonTotals.totalVehicleCost, symbol)}</td>
+                  <td className="py-3 px-4 text-right text-sky-400">{formatCurrency(comparisonTotals.totalVehicleCost, symbol)}</td>
                   <td className="py-3 px-4 text-right text-rose-400">{formatCurrency(comparisonTotals.totalExpenses, symbol)}</td>
                   <td className="py-3 px-4 text-right text-sky-300">{formatCurrency(comparisonTotals.grossProfit, symbol)}</td>
-                  <td className="py-3 px-4 text-right text-emerald-400 font-black">{formatCurrency(comparisonTotals.netProfit, symbol)}</td>
+                  <td className="py-3 px-4 text-right text-sky-400 font-black">{formatCurrency(comparisonTotals.netProfit, symbol)}</td>
                   <td className="py-3 px-3 text-center text-slate-400" colSpan={2}>
                     {comparisonTotals.totalSalesRevenue > 0
                       ? `${((comparisonTotals.netProfit / comparisonTotals.totalSalesRevenue) * 100).toFixed(1)}% avg net`
@@ -829,7 +829,7 @@ export const MonthlySummarySection: React.FC = () => {
         
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Receipt className="w-4 h-4 text-emerald-400" />
+            <Receipt className="w-4 h-4 text-sky-400" />
             <h3 className="text-sm font-black text-slate-200 uppercase tracking-wider">
               {currentMonthSummary.monthLabel} Itemized Sales Ledger ({soldVehiclesInMonth.length})
             </h3>
@@ -848,10 +848,10 @@ export const MonthlySummarySection: React.FC = () => {
                   <th className="py-3 px-3">Date & Type</th>
                   <th className="py-3 px-3">Customer</th>
                   <th className="py-3 px-4 text-right">Sale Revenue</th>
-                  <th className="py-3 px-4 text-right text-orange-400">Cost Price</th>
+                  <th className="py-3 px-4 text-right text-sky-400">Cost Price</th>
                   <th className="py-3 px-4 text-right text-rose-400">Expenses</th>
                   <th className="py-3 px-4 text-right text-sky-400">Gross Profit</th>
-                  <th className="py-3 px-4 text-right text-emerald-400">Net Profit</th>
+                  <th className="py-3 px-4 text-right text-sky-400">Net Profit</th>
                   <th className="py-3 px-3 text-center">Customer Doc</th>
                 </tr>
               </thead>
@@ -881,7 +881,7 @@ export const MonthlySummarySection: React.FC = () => {
                       <td className="py-3 px-3">
                         <div className="text-white font-medium">{formatDate(sale.saleDate)}</div>
                         <span className={`inline-block px-1.5 py-0.2 rounded text-[10px] font-bold ${
-                          isFinance ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'
+                          isFinance ? 'bg-amber-500/20 text-amber-300' : 'bg-sky-500/20 text-sky-300'
                         }`}>
                           {sale.saleMethod}
                         </span>
@@ -896,7 +896,7 @@ export const MonthlySummarySection: React.FC = () => {
                         {formatCurrency(sale.saleAmount, symbol)}
                       </td>
 
-                      <td className="py-3 px-4 text-right font-mono text-orange-400">
+                      <td className="py-3 px-4 text-right font-mono text-sky-400">
                         {formatCurrency(vehicleCost, symbol)}
                       </td>
 
@@ -908,7 +908,7 @@ export const MonthlySummarySection: React.FC = () => {
                         {formatCurrency(grossProfit, symbol)}
                       </td>
 
-                      <td className="py-3 px-4 text-right font-mono font-black text-emerald-400">
+                      <td className="py-3 px-4 text-right font-mono font-black text-sky-400">
                         +{formatCurrency(netProfit, symbol)}
                       </td>
 

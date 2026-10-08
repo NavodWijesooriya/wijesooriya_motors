@@ -229,7 +229,7 @@ export const SaleModal: React.FC = () => {
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-950/80">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30">
+              <span className="text-[10px] font-black uppercase tracking-widest text-sky-400 px-2 py-0.5 rounded bg-sky-500/10 border border-sky-500/30">
                 Sales POS
               </span>
               <span className="text-xs text-slate-400 font-mono">
@@ -310,11 +310,11 @@ export const SaleModal: React.FC = () => {
                 onClick={() => setSaleMethod('Cash')}
                 className={`p-4 rounded-xl border flex flex-col items-center gap-2 text-center transition-all ${
                   saleMethod === 'Cash'
-                    ? 'bg-emerald-500/20 border-emerald-500 text-white shadow-lg shadow-emerald-500/10'
+                    ? 'bg-sky-500/20 border-sky-500 text-white shadow-lg shadow-sky-500/10'
                     : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-900'
                 }`}
               >
-                <Coins className={`w-6 h-6 ${saleMethod === 'Cash' ? 'text-emerald-400' : 'text-slate-500'}`} />
+                <Coins className={`w-6 h-6 ${saleMethod === 'Cash' ? 'text-sky-400' : 'text-slate-500'}`} />
                 <div>
                   <div className="text-sm font-black">Cash Sale</div>
                   <div className="text-[11px] text-slate-400 mt-0.5">Paid directly in full</div>
@@ -326,15 +326,15 @@ export const SaleModal: React.FC = () => {
                 onClick={() => setSaleMethod('Finance')}
                 className={`p-4 rounded-xl border flex flex-col items-center gap-2 text-center transition-all ${
                   saleMethod === 'Finance'
-                    ? 'bg-amber-500/20 border-amber-500 text-white shadow-lg shadow-amber-500/10'
+                    ? 'bg-sky-500/20 border-sky-500 text-white shadow-lg shadow-sky-500/10'
                     : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-900'
                 }`}
               >
-                <Percent className={`w-6 h-6 ${saleMethod === 'Finance' ? 'text-amber-400' : 'text-slate-500'}`} />
+                <Percent className={`w-6 h-6 ${saleMethod === 'Finance' ? 'text-sky-400' : 'text-slate-500'}`} />
                 <div>
                   <div className="text-sm font-black flex items-center justify-center gap-1">
                     <span>Finance Sale</span>
-                    <span className="px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 text-[10px] font-bold">Guarantor & Terms</span>
+                    <span className="px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 text-[10px] font-bold">Guarantor & Terms</span>
                   </div>
                   <div className="text-[11px] text-slate-400 mt-0.5">With customer & guarantor agreement</div>
                 </div>
@@ -364,7 +364,7 @@ export const SaleModal: React.FC = () => {
                       setFinanceAmount(Number(newAmount || 0));
                     }
                   }}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-12 pr-3.5 py-2.5 text-sm text-white font-mono font-black outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-12 pr-3.5 py-2.5 text-sm text-white font-mono font-black outline-none focus:border-sky-500"
                 />
               </div>
               <span className="text-[10px] text-slate-400 mt-1 block">
@@ -655,7 +655,7 @@ export const SaleModal: React.FC = () => {
           <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-slate-800 shadow-xl space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
+                <TrendingUp className="w-4 h-4 text-sky-400" />
                 Internal Profit Calculator (Dealer Terminal Only)
               </h3>
               <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded font-bold">
@@ -697,18 +697,18 @@ export const SaleModal: React.FC = () => {
             </div>
 
             {/* Net Profit Banner */}
-            <div className="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/40 flex items-center justify-between">
+            <div className="p-3.5 rounded-xl bg-sky-950/30 border border-sky-500/40 flex items-center justify-between">
               <div>
-                <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                <span className="text-[10px] uppercase font-bold text-sky-400 tracking-wider">
                   Net Dealership Profit
                 </span>
-                <div className="text-xl sm:text-2xl font-black text-emerald-400 font-mono mt-0.5">
+                <div className="text-xl sm:text-2xl font-black text-sky-400 font-mono mt-0.5">
                   +{formatCurrency(financials.netProfit, symbol)}
                 </div>
               </div>
 
               <div className="text-right">
-                <span className="text-sm font-black text-emerald-300">
+                <span className="text-sm font-black text-sky-300">
                   {financials.profitMarginPercent.toFixed(1)}% Margin
                 </span>
                 <div className="text-[10px] text-slate-400 mt-0.5">
@@ -733,7 +733,7 @@ export const SaleModal: React.FC = () => {
             <button
               type="submit"
               disabled={isSaving}
-              className="flex-1 sm:flex-initial px-8 py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 transition-transform active:scale-95 flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-emerald-400"
+              className="flex-1 sm:flex-initial px-8 py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-sky-500 to-sky-400 hover:from-sky-400 hover:to-sky-300 text-slate-950 font-black text-sm shadow-xl shadow-sky-500/25 transition-transform active:scale-95 flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-sky-400"
             >
               <CheckCircle2 className="w-5 h-5 stroke-[2.5]" aria-hidden="true" />
               <span>{isSaving ? 'Saving...' : 'Finalize Sale & Generate Customer Document'}</span>
