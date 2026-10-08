@@ -26,7 +26,7 @@ import { PWAUpdateNotice } from './components/PWAUpdateNotice';
 import { Bike as BikeIcon } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
-  const { activeTab, summary, logout, isBusinessDataLoading, businessDataError } = useDealership();
+  const { activeTab, isBusinessDataLoading, businessDataError } = useDealership();
   const { profile } = useAuth();
 
   if (!profile?.businessName.trim()) return <BusinessNameSetup />;
@@ -48,7 +48,7 @@ const MainLayout: React.FC = () => {
   if (isBusinessDataLoading) return <LoadingScreen />;
 
   return (
-    <div className="app-shell min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-sky-200 selection:text-slate-950 transition-colors print:bg-white print:text-black print:min-h-0">
+    <div className="app-shell workspace-app min-h-screen print:bg-white print:text-black print:min-h-0">
       
       {/* PWA Banner */}
       <div className="print:hidden">
@@ -61,7 +61,7 @@ const MainLayout: React.FC = () => {
       </div>
 
       {/* Main Content Area (Hidden during printing so only printable documents print) */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 md:pb-12 print:hidden">
+      <main className="workspace-main print:hidden">
         {activeTab === 'dashboard' && <DashboardView />}
         {activeTab === 'inventory' && <InventoryView />}
         {activeTab === 'sales' && <SalesView />}
@@ -91,23 +91,9 @@ const MainLayout: React.FC = () => {
       </div>
 
       {/* Desktop Footer */}
-      <footer className="hidden md:block border-t border-slate-200 bg-white/80 py-6 text-xs text-slate-500 shadow-[0_-8px_30px_-28px_rgba(15,23,42,0.35)] print:hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-black text-slate-300 flex items-center gap-1">
-              <BikeIcon className="w-4 h-4 text-sky-400" />
-              Sales POS
-            </span>
-            <span>•</span>
-            <span>{profile.businessName} Business Management</span>
-          </div>
-
-          <div className="flex items-center gap-4 text-slate-400">
-            <span>Showroom: {summary.totalBikesInStock} in stock</span>
-            <span>•</span>
-            <span>3% Finance Commission Active</span>
-          </div>
-        </div>
+      <footer className="workspace-footer print:hidden">
+        <span><BikeIcon aria-hidden="true" /> Sale POS <i>·</i> Vehicle Dealership Management System</span>
+        <span>Build for a better tomorrow <BikeIcon aria-hidden="true" /></span>
       </footer>
 
     </div>

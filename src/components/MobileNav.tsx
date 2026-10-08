@@ -13,7 +13,7 @@ export const MobileNav: React.FC = () => {
 
   return (
     <nav 
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 px-2 py-1.5 pb-safe shadow-[0_-12px_36px_-18px_rgba(15,23,42,0.3)]"
+      className="workspace-mobile-nav fixed bottom-0 left-0 right-0 z-40 px-2 py-1.5 pb-safe"
       aria-label="Mobile Navigation"
       role="navigation"
     >
