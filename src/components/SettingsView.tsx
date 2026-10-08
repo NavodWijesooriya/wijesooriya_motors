@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDealership } from '../context/DealershipContext';
 import { useAuth } from '../../context/AuthContext';
+import { isPlatformAuthenticatorAvailable } from '../lib/biometricAuth';
 import { ApprovalRequests } from './ApprovalRequests';
 import { 
   Settings as SettingsIcon, 
@@ -14,11 +15,22 @@ import {
   Check,
   Trash2,
   ShieldCheck,
-  LogOut
+  LogOut,
+  Fingerprint
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
-  const { isAdmin } = useAuth();
+  const {
+    isAdmin,
+    user,
+    biometricEnabled,
+    biometricStatusLoading,
+    biometricStatusError,
+    confirmBiometricSetup,
+    enableBiometrics,
+    disableBiometrics,
+    refreshBiometricStatus
+  } = useAuth();
   const { 
     settings, 
     updateSettings, 
@@ -42,6 +54,12 @@ export const SettingsView: React.FC = () => {
   const [currencySymbol, setCurrencySymbol] = useState(settings.currencySymbol);
   const [theme, setTheme] = useState<'dark' | 'light'>(settings.theme);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [biometricPassword, setBiometricPassword] = useState('');
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricActionLoading, setBiometricActionLoading] = useState(false);
+  const [biometricActionError, setBiometricActionError] = useState('');
+  const [biometricActionNotice, setBiometricActionNotice] = useState('');
+  const [biometricPasswordConfirmed, setBiometricPasswordConfirmed] = useState(false);
 
   useEffect(() => {
     setDealershipName(settings.dealershipName);
@@ -53,6 +71,67 @@ export const SettingsView: React.FC = () => {
     setCurrencySymbol(settings.currencySymbol);
     setTheme(settings.theme);
   }, [settings]);
+
+  useEffect(() => {
+    let active = true;
+    void isPlatformAuthenticatorAvailable()
+      .then((available) => {
+        if (active) setBiometricAvailable(available);
+      })
+      .catch((error: unknown) => {
+        console.warn('Could not check for a platform authenticator', error);
+        if (active) setBiometricAvailable(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleEnableBiometrics = async () => {
+    setBiometricActionError('');
+    setBiometricActionNotice('');
+    setBiometricActionLoading(true);
+    try {
+      await enableBiometrics();
+      setBiometricPasswordConfirmed(false);
+      setBiometricActionNotice('Biometric unlock is ready for this device.');
+    } catch (error) {
+      setBiometricPasswordConfirmed(false);
+      setBiometricActionError(error instanceof Error ? error.message : 'Could not enable biometric unlock.');
+    } finally {
+      setBiometricActionLoading(false);
+    }
+  };
+
+  const handleConfirmBiometricPassword = async () => {
+    setBiometricActionError('');
+    setBiometricActionNotice('');
+    setBiometricActionLoading(true);
+    try {
+      await confirmBiometricSetup(biometricPassword);
+      setBiometricPassword('');
+      setBiometricPasswordConfirmed(true);
+      setBiometricActionNotice('Password confirmed. Register this device in the next step.');
+    } catch (error) {
+      setBiometricActionError(error instanceof Error ? error.message : 'Password confirmation failed.');
+    } finally {
+      setBiometricActionLoading(false);
+    }
+  };
+
+  const handleDisableBiometrics = async () => {
+    setBiometricActionError('');
+    setBiometricActionNotice('');
+    setBiometricActionLoading(true);
+    try {
+      await disableBiometrics();
+      setBiometricActionNotice('Biometric unlock has been disabled for this account.');
+    } catch (error) {
+      setBiometricActionError(error instanceof Error ? error.message : 'Could not disable biometric unlock.');
+    } finally {
+      setBiometricActionLoading(false);
+    }
+  };
 
   // Confirmation Modal for Clear All Data
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -135,13 +214,103 @@ export const SettingsView: React.FC = () => {
               {currentUser?.role}: <strong className="text-white">{currentUser?.username}</strong>
             </span>
             <button
-              onClick={logout}
+              onClick={() => void logout().catch(() => undefined)}
               className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-bold border border-rose-500/30 transition-colors"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Log Out</span>
             </button>
           </div>
+        </div>
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <Fingerprint className="mt-0.5 h-5 w-5 shrink-0 text-sky-400" aria-hidden="true" />
+            <div>
+              <h3 className="text-sm font-bold text-white">Biometric app unlock</h3>
+              <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                Use your device&apos;s fingerprint or face authentication when available. The operating system verifies you locally; this app receives only a cryptographic passkey response, never a fingerprint or face image. The app locks whenever it is reopened or returns from the background.
+              </p>
+            </div>
+          </div>
+
+          {biometricStatusLoading && (
+            <p role="status" className="text-xs text-slate-400">Checking passkey settings...</p>
+          )}
+          {biometricStatusError && (
+            <div className="flex flex-wrap items-center gap-3">
+              <p role="alert" className="text-xs text-rose-300">{biometricStatusError}</p>
+              <button
+                type="button"
+                disabled={biometricActionLoading}
+                onClick={() => void refreshBiometricStatus().catch(() => undefined)}
+                className="text-xs font-bold text-sky-300 underline underline-offset-2 disabled:opacity-50"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+          {!biometricStatusLoading && !biometricStatusError && biometricEnabled && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3">
+              <p role="status" className="text-xs font-semibold text-emerald-200">Passkey unlock is enabled.</p>
+              <button
+                type="button"
+                disabled={biometricActionLoading}
+                onClick={() => void handleDisableBiometrics()}
+                className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-300 hover:bg-rose-500/20 disabled:opacity-50"
+              >
+                Disable biometric unlock
+              </button>
+            </div>
+          )}
+          {!biometricStatusLoading && !biometricStatusError && !biometricEnabled && biometricAvailable && (
+            <div className="max-w-md space-y-3">
+              {!biometricPasswordConfirmed ? (
+                <>
+                  <label htmlFor="biometric-password" className="block text-xs font-semibold text-slate-300">
+                    Confirm your password to register this device
+                  </label>
+                  <input
+                    id="biometric-password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={biometricPassword}
+                    onChange={(event) => setBiometricPassword(event.target.value)}
+                    disabled={biometricActionLoading}
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white outline-none focus:border-sky-500 focus-visible:ring-2 focus-visible:ring-sky-400 disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    disabled={biometricActionLoading || !biometricPassword}
+                    onClick={() => void handleConfirmBiometricPassword()}
+                    className="rounded-xl border border-sky-500/40 bg-sky-500/10 px-4 py-2.5 text-xs font-black text-sky-200 hover:bg-sky-500/20 disabled:opacity-50"
+                  >
+                    {biometricActionLoading ? 'Confirming password...' : 'Confirm password'}
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  disabled={biometricActionLoading}
+                  onClick={() => void handleEnableBiometrics()}
+                  className="rounded-xl bg-sky-500 px-4 py-2.5 text-xs font-black text-slate-950 hover:bg-sky-400 disabled:opacity-50"
+                >
+                  {biometricActionLoading ? 'Registering device...' : 'Register this device'}
+                </button>
+              )}
+            </div>
+          )}
+          {!biometricStatusLoading && !biometricStatusError && !biometricEnabled && !biometricAvailable && (
+            <p className="text-xs text-slate-400">
+              This browser does not report an available platform authenticator. Continue using your email and password.
+            </p>
+          )}
+          {biometricActionError && <p role="alert" className="text-xs text-rose-300">{biometricActionError}</p>}
+          {biometricActionNotice && <p role="status" className="text-xs text-emerald-300">{biometricActionNotice}</p>}
+          {biometricEnabled && user?.email && (
+            <p className="text-[11px] text-slate-500">
+              Signing out disables passkey sign-in. The next password sign-in re-enables your registered passkeys; use Disable above to remove them permanently.
+            </p>
+          )}
         </div>
       </div>
 

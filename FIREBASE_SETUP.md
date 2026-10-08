@@ -13,6 +13,27 @@
 
 The registration request is stored at `users/{AUTH_UID}` with `email`, `approvalStatus`, `submittedAt`, `createdAt`, and `updatedAt`. Approval and rejection decisions record `reviewedBy` and `reviewedAt`. Rejected and pending profiles cannot read or write the private dealership data collections, even if the Firebase Authentication account still exists.
 
+## Passkey biometric unlock
+
+The app uses WebAuthn platform credentials (passkeys) for device-mediated fingerprint, face, or other OS user verification. Biometric samples remain on the device. Firebase Cloud Functions verify registration and assertion signatures and store only the credential ID, public key, and signature counter. On app startup and whenever it is backgrounded, the app clears its persisted Firebase session; users then unlock with a registered passkey or sign in with their email and password. An explicit **Log Out** deactivates the passkeys; the next password sign-in reactivates them. Users can permanently remove registered passkeys from Settings.
+
+Cloud Functions require a Firebase project with billing enabled. Choose the canonical HTTPS origin from which users will install and open the PWA, and deploy the Functions and Firestore rules:
+
+```text
+firebase deploy --only functions,firestore:rules --project YOUR_PROJECT_ID
+```
+
+All callable functions explicitly enable CORS. If the browser reports a CORS preflight failure, check the function endpoint directly: a `404 Not Found` means the callable was not deployed to the configured project/region, and cannot be fixed by changing browser CORS settings. Confirm that `VITE_FIREBASE_PROJECT_ID` names the intended project and that `firebase functions:list --project YOUR_PROJECT_ID` includes `beginBiometricAuthentication` in `asia-south1`; then deploy the command above. A preflight response should be successful and include `Access-Control-Allow-Origin`.
+
+On first deployment, provide these function parameters when prompted:
+
+- `WEBAUTHN_ORIGIN`: the exact app origin, including scheme and port when applicable, with no trailing slash (for example `https://sales.example.com`).
+- `WEBAUTHN_RP_ID`: that origin's hostname only, without scheme or port (for example `sales.example.com`).
+
+These values must match the deployed PWA origin for WebAuthn verification to succeed. For local testing against a Functions deployment, configure `WEBAUTHN_ORIGIN` as `http://localhost:3000` and `WEBAUTHN_RP_ID` as `localhost`; use a separate Firebase project or the Firebase Emulator Suite so those settings do not replace production's origin/RP ID. Credentials registered for `localhost` cannot be used on the production domain. Re-deploy Functions if the app's canonical domain changes. After deployment, configure Firestore TTL for the `expiresAt` field on `webauthnChallenges` and `webauthnRateLimits` so expired records are eventually removed; expired challenges are rejected even before TTL cleanup.
+
+In **Settings → Firebase Account**, the user can register up to five platform passkeys after confirming their password. The browser/operating system determines which local verification method is available; if platform verification is unavailable or a credential is not registered, use email and password. WebAuthn requires a secure context (HTTPS, or localhost during development) and a supported browser/device.
+
 ## Data ownership
 
 Each account's profile and data live under its Authentication UID:

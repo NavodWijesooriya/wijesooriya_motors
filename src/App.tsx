@@ -121,7 +121,7 @@ const AuthenticatedApp: React.FC = () => {
         >
           Retry
         </button>
-        <button type="button" onClick={() => void logout()} className="text-sm font-semibold text-slate-400 hover:text-white">
+        <button type="button" onClick={() => void logout().catch(() => undefined)} className="text-sm font-semibold text-slate-400 hover:text-white">
           Sign out
         </button>
       </main>
@@ -144,7 +144,7 @@ const AuthenticatedApp: React.FC = () => {
         <p role="status" className="max-w-md text-sm text-slate-300">{authNotice || message}</p>
         <button
           type="button"
-          onClick={() => void logout()}
+          onClick={() => void logout().catch(() => undefined)}
           className="rounded-xl bg-sky-500 px-5 py-3 font-bold text-slate-950"
         >
           Sign out
@@ -157,7 +157,7 @@ const AuthenticatedApp: React.FC = () => {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-950 p-6 text-center text-slate-100">
         <p role="alert" className="text-sm text-rose-300">Your approved profile could not be loaded. Please try again.</p>
-        <button type="button" onClick={() => void logout()} className="text-sm font-semibold text-slate-400 hover:text-white">
+        <button type="button" onClick={() => void logout().catch(() => undefined)} className="text-sm font-semibold text-slate-400 hover:text-white">
           Sign out
         </button>
       </main>

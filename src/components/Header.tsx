@@ -171,7 +171,7 @@ export const Header: React.FC = () => {
                 <Store aria-hidden="true" /> Install app
               </button>
             )}
-            <button type="button" onClick={() => { setIsMobileMenuOpen(false); void logout(); }}>
+            <button type="button" onClick={() => { setIsMobileMenuOpen(false); void logout().catch(() => undefined); }}>
               <LogOut aria-hidden="true" /> Sign out
             </button>
           </div>

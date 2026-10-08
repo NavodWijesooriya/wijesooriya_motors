@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { isPlatformAuthenticatorAvailable } from '../lib/biometricAuth';
 import { 
   Bike as BikeIcon, 
+  Fingerprint,
   Lock, 
   Eye, 
   EyeOff, 
@@ -12,13 +14,29 @@ import {
 } from 'lucide-react';
 
 export const LoginScreen: React.FC = () => {
-  const { signIn, registerAccount, authNotice, clearAuthNotice } = useAuth();
+  const { signIn, registerAccount, unlockWithBiometrics, authNotice, clearAuthNotice } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void isPlatformAuthenticatorAvailable()
+      .then((available) => {
+        if (active) setBiometricAvailable(available);
+      })
+      .catch((error: unknown) => {
+        console.warn('Could not check for a platform authenticator', error);
+        if (active) setBiometricAvailable(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +52,22 @@ export const LoginScreen: React.FC = () => {
       }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unable to sign in. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBiometricUnlock = async () => {
+    setErrorMessage('');
+    setIsLoading(true);
+    try {
+      await unlockWithBiometrics();
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? `${error.message} Use your email and password if this device has no registered passkey.`
+          : 'Biometric sign-in was not completed. Use your email and password instead.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -162,6 +196,28 @@ export const LoginScreen: React.FC = () => {
             )}
             <span>{isRegistering ? 'Request Account' : 'Sign In'}</span>
           </button>
+
+          {!isRegistering && biometricAvailable && (
+            <>
+              <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-slate-600">
+                <span className="h-px flex-1 bg-slate-800" />
+                <span>or unlock securely</span>
+                <span className="h-px flex-1 bg-slate-800" />
+              </div>
+              <button
+                type="button"
+                disabled={isLoading}
+                onClick={() => void handleBiometricUnlock()}
+                className="w-full py-3 min-h-[44px] rounded-xl border border-sky-500/40 bg-sky-500/10 text-sky-200 font-bold text-sm transition-colors hover:bg-sky-500/20 flex items-center justify-center gap-2 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-sky-400"
+              >
+                <Fingerprint className="w-4 h-4" aria-hidden="true" />
+                <span>Unlock with device biometrics</span>
+              </button>
+              <p className="text-center text-[11px] leading-relaxed text-slate-500">
+                Your device verifies you locally. The app never receives or stores your biometric data.
+              </p>
+            </>
+          )}
 
           <p className="text-center text-xs text-slate-400">
             {isRegistering ? 'Already have an account?' : 'Need an account?'}{' '}

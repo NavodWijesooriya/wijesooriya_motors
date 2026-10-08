@@ -3,13 +3,24 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import {
   createUserWithEmailAndPassword,
+  EmailAuthProvider,
   onAuthStateChanged,
+  reauthenticateWithCredential,
+  signInWithCustomToken,
   signInWithEmailAndPassword,
   signOut,
   type User
 } from 'firebase/auth';
 import { doc, getDoc, onSnapshot, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import {
+  authenticateBiometricCredential,
+  activateBiometricSignIn,
+  deactivateBiometricSignIn,
+  getBiometricEnrollmentStatus,
+  registerBiometricCredential,
+  revokeBiometricCredentials
+} from '@/src/lib/biometricAuth';
 import { LoadingScreen } from '../src/components/LoadingScreen';
 
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'unregistered';
@@ -32,8 +43,16 @@ interface AuthContextValue {
   loading: boolean;
   authError: string | null;
   authNotice: string | null;
+  biometricEnabled: boolean;
+  biometricStatusLoading: boolean;
+  biometricStatusError: string | null;
   signIn: (email: string, password: string) => Promise<void>;
   registerAccount: (email: string, password: string) => Promise<void>;
+  unlockWithBiometrics: () => Promise<void>;
+  confirmBiometricSetup: (password: string) => Promise<void>;
+  enableBiometrics: () => Promise<void>;
+  disableBiometrics: () => Promise<void>;
+  refreshBiometricStatus: () => Promise<void>;
   logout: () => Promise<void>;
   clearAuthNotice: () => void;
   saveBusinessName: (businessName: string) => Promise<void>;
@@ -48,11 +67,29 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
   authError: null,
   authNotice: null,
+  biometricEnabled: false,
+  biometricStatusLoading: false,
+  biometricStatusError: null,
   signIn: async () => {
     throw new Error('Authentication is required to sign in.');
   },
   registerAccount: async () => {
     throw new Error('Authentication is required to register.');
+  },
+  unlockWithBiometrics: async () => {
+    throw new Error('Biometric authentication is not initialized.');
+  },
+  confirmBiometricSetup: async () => {
+    throw new Error('Authentication is required to enable biometrics.');
+  },
+  enableBiometrics: async () => {
+    throw new Error('Authentication is required to enable biometrics.');
+  },
+  disableBiometrics: async () => {
+    throw new Error('Authentication is required to disable biometrics.');
+  },
+  refreshBiometricStatus: async () => {
+    throw new Error('Authentication is not initialized.');
   },
   logout: async () => {
     throw new Error('Authentication is not initialized.');
@@ -70,15 +107,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [approvalStatus, setApprovalStatus] = useState<ApprovalStatus>('unregistered');
   const [approvalStatusVerified, setApprovalStatusVerified] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sessionSetupPending, setSessionSetupPending] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [authNotice, setAuthNotice] = useState<string | null>(null);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometricStatusLoading, setBiometricStatusLoading] = useState(false);
+  const [biometricStatusError, setBiometricStatusError] = useState<string | null>(null);
 
   useEffect(() => {
     let unsubscribeProfile: (() => void) | undefined;
     let unsubscribeRole: (() => void) | undefined;
     let accessRevocationRequested = false;
+    let initialAuthStateResolved = false;
+    let sessionLockRequested = false;
+
+    const lockSession = () => {
+      if (!auth.currentUser || sessionLockRequested) return;
+      sessionLockRequested = true;
+      setLoading(true);
+      void signOut(auth).catch((error) => {
+        console.error('Failed to lock the app after it was backgrounded', error);
+        sessionLockRequested = false;
+        setAuthError('The app could not securely lock. Check your connection, then retry or sign out.');
+        setLoading(false);
+      });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') lockSession();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', lockSession);
 
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      if (!initialAuthStateResolved) {
+        initialAuthStateResolved = true;
+        if (currentUser) {
+          sessionLockRequested = true;
+          setLoading(true);
+          void signOut(auth).catch((error) => {
+            console.error('Failed to lock a restored Firebase session', error);
+            sessionLockRequested = false;
+            setUser(currentUser);
+            setAuthError('The saved session could not be securely locked. Sign out and try again.');
+            setLoading(false);
+          });
+          return;
+        }
+      }
+
+      sessionLockRequested = false;
       if (currentUser) setLoading(true);
       unsubscribeProfile?.();
       unsubscribeRole?.();
@@ -91,11 +170,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setApprovalStatus('unregistered');
       setApprovalStatusVerified(false);
       setAuthError(null);
+      setBiometricEnabled(false);
+      setBiometricStatusError(null);
+      setBiometricStatusLoading(Boolean(currentUser));
 
       if (!currentUser) {
+        setBiometricStatusLoading(false);
         setLoading(false);
         return;
       }
+
+      void getBiometricEnrollmentStatus()
+        .then((enabled) => {
+          if (auth.currentUser?.uid === currentUser.uid) setBiometricEnabled(enabled);
+        })
+        .catch((error: unknown) => {
+          console.error('Failed to check biometric enrollment status', error);
+          if (auth.currentUser?.uid === currentUser.uid) {
+            setBiometricStatusError('Biometric settings could not be checked. Check your connection and try again.');
+          }
+        })
+        .finally(() => {
+          if (auth.currentUser?.uid === currentUser.uid) setBiometricStatusLoading(false);
+        });
 
       let profileLoaded = false;
       let roleLoaded = false;
@@ -175,12 +272,75 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       unsubscribeAuth();
       unsubscribeProfile?.();
       unsubscribeRole?.();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', lockSession);
     };
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
     setAuthNotice(null);
-    await signInWithEmailAndPassword(auth, email.trim(), password);
+    try {
+      setSessionSetupPending(true);
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      try {
+        const activatedCredentials = await activateBiometricSignIn();
+        if (activatedCredentials > 0) {
+          setBiometricEnabled(true);
+          setBiometricStatusError(null);
+        }
+      } catch (error) {
+        console.error('Password sign-in succeeded but passkeys could not be reactivated', error);
+        setBiometricStatusError('Password sign-in succeeded, but biometric unlock could not be reactivated. Check your connection.');
+      }
+    } finally {
+      setSessionSetupPending(false);
+    }
+  }, []);
+
+  const unlockWithBiometrics = useCallback(async () => {
+    setAuthNotice(null);
+    const customToken = await authenticateBiometricCredential();
+    await signInWithCustomToken(auth, customToken);
+  }, []);
+
+  const confirmBiometricSetup = useCallback(async (password: string) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser?.email) throw new Error('Sign in with an email and password before enabling biometrics.');
+    await reauthenticateWithCredential(
+      currentUser,
+      EmailAuthProvider.credential(currentUser.email, password)
+    );
+    await currentUser.getIdToken(true);
+  }, []);
+
+  const enableBiometrics = useCallback(async () => {
+    await registerBiometricCredential();
+    setBiometricEnabled(true);
+    setBiometricStatusError(null);
+  }, []);
+
+  const disableBiometrics = useCallback(async () => {
+    await revokeBiometricCredentials();
+    setBiometricEnabled(false);
+    setBiometricStatusError(null);
+  }, []);
+
+  const refreshBiometricStatus = useCallback(async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error('Sign in before checking biometric settings.');
+    setBiometricStatusLoading(true);
+    try {
+      const enabled = await getBiometricEnrollmentStatus();
+      if (auth.currentUser?.uid === currentUser.uid) {
+        setBiometricEnabled(enabled);
+        setBiometricStatusError(null);
+      }
+    } catch (error) {
+      setBiometricStatusError('Biometric settings could not be checked. Check your connection and try again.');
+      throw error;
+    } finally {
+      setBiometricStatusLoading(false);
+    }
   }, []);
 
   const registerAccount = useCallback(async (email: string, password: string) => {
@@ -214,8 +374,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = useCallback(async () => {
     setAuthNotice(null);
-    await signOut(auth);
-  }, []);
+    try {
+      if (biometricEnabled || biometricStatusLoading || biometricStatusError) {
+        await deactivateBiometricSignIn();
+      }
+      await signOut(auth);
+    } catch (error) {
+      console.error('Failed to deactivate biometrics or sign out', error);
+      setAuthError('Biometric sign-in could not be safely deactivated or the session could not be closed. You are still signed in; check your connection and try again.');
+      throw error;
+    }
+  }, [biometricEnabled, biometricStatusError, biometricStatusLoading]);
 
   const clearAuthNotice = useCallback(() => setAuthNotice(null), []);
 
@@ -266,13 +435,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       loading,
       authError,
       authNotice,
+      biometricEnabled,
+      biometricStatusLoading,
+      biometricStatusError,
       signIn,
       registerAccount,
+      unlockWithBiometrics,
+      confirmBiometricSetup,
+      enableBiometrics,
+      disableBiometrics,
+      refreshBiometricStatus,
       logout,
       clearAuthNotice,
       saveBusinessName
     }}>
-      {loading ? <LoadingScreen /> : children}
+      {loading || sessionSetupPending ? <LoadingScreen /> : children}
     </AuthContext.Provider>
   );
 };

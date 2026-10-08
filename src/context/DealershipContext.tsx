@@ -10,8 +10,7 @@ import {
 } from '../types';
 import { sampleBikes, initialDealershipSettings } from '../data/initialData';
 import { calculateFinancialSummary, calculateTotalOtherCosts, calculateTotalCost, formatCurrency } from '../utils/formatters';
-import { signOut } from 'firebase/auth';
-import { auth, db } from '../../lib/firebase';
+import { db } from '../../lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 
 interface ToastNotification {
@@ -25,7 +24,7 @@ interface DealershipContextType {
   // Authentication
   isAuthenticated: boolean;
   currentUser: AuthUser | null;
-  logout: () => void;
+  logout: () => Promise<void>;
 
   bikes: Bike[];
   settings: DealershipSettings;
@@ -84,7 +83,7 @@ interface DealershipContextType {
 const DealershipContext = createContext<DealershipContextType | undefined>(undefined);
 
 export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { user, profile, isAdmin, saveBusinessName } = useAuth();
+  const { user, profile, isAdmin, saveBusinessName, logout: logoutAuth } = useAuth();
   const businessNameRef = useRef(profile?.businessName || '');
   businessNameRef.current = profile?.businessName || '';
   const currentUser: AuthUser | null = user ? {
@@ -491,17 +490,13 @@ export const DealershipProvider: React.FC<{ children: ReactNode }> = ({ children
     setBikes(savedBikes);
   };
 
-  const logout = () => {
+  const logout = async () => {
     setBikes([]);
     setSettings(initialDealershipSettings);
     setSelectedBike(null);
     setSelectedSaleRecord(null);
     setToasts([]);
-    void signOut(auth).catch((error) => {
-      console.error('Failed to sign out of Firebase', error);
-      showToast('Sign Out Failed', 'Your Firebase session could not be closed.', 'error');
-    });
-    showToast('Logged Out', 'You have been safely logged out.', 'info');
+    await logoutAuth();
   };
 
   const installPWA = async () => {
