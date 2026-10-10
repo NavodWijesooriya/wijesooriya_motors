@@ -77,8 +77,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let unsubscribeProfile: (() => void) | undefined;
     let unsubscribeRole: (() => void) | undefined;
     let accessRevocationRequested = false;
+    let authCheckId = 0;
 
-    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
+      const currentCheckId = ++authCheckId;
       if (currentUser) setLoading(true);
       unsubscribeProfile?.();
       unsubscribeRole?.();
@@ -96,6 +98,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
         return;
       }
+
+      try {
+        await currentUser.getIdToken(true);
+      } catch (error) {
+        if (currentCheckId !== authCheckId) return;
+        console.error('Failed to validate Firebase Authentication session', error);
+
+        const errorCode = typeof error === 'object' && error !== null && 'code' in error
+          ? error.code
+          : undefined;
+        if (errorCode === 'auth/user-disabled'
+          || errorCode === 'auth/user-not-found'
+          || errorCode === 'auth/user-token-expired'
+          || errorCode === 'auth/invalid-user-token') {
+          setAuthNotice('Your sign-in session is no longer valid. Please sign in again.');
+          try {
+            await signOut(auth);
+          } catch (signOutError) {
+            console.error('Failed to clear an invalid Firebase Authentication session', signOutError);
+            setAuthError('Your sign-in session is no longer valid and could not be cleared. Please refresh and try again.');
+            setLoading(false);
+          }
+        } else {
+          setAuthError('Your sign-in could not be verified. Check your connection and try again.');
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (currentCheckId !== authCheckId) return;
 
       let profileLoaded = false;
       let roleLoaded = false;
@@ -172,6 +204,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => {
+      authCheckId += 1;
       unsubscribeAuth();
       unsubscribeProfile?.();
       unsubscribeRole?.();
