@@ -886,7 +886,7 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
             <button
               type="submit"
               disabled={isSaving}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-8 py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-sky-500 to-sky-400 hover:from-sky-400 hover:to-sky-300 text-slate-950 font-black text-sm shadow-xl shadow-sky-500/25 transition-all hover:scale-[1.01] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-sky-400"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-8 py-3 min-h-[44px] rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-black transition-all shadow-md shadow-sky-500/20 flex items-center justify-center gap-1.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-sky-400"
             >
               <Check className="w-5 h-5 stroke-[3]" aria-hidden="true" />
               <span>{isSaving ? 'Saving...' : isEdit ? 'Save Changes' : 'Save Vehicle to Inventory'}</span>
@@ -897,3 +897,5 @@ export const BikeModal: React.FC<BikeModalProps> = ({ isEdit = false }) => {
     </div>
   );
 };
+
+
